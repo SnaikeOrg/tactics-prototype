@@ -71,6 +71,32 @@ max(
 
 Ein diagonal angrenzendes Feld besitzt damit Distanz 1.
 
+### 2.2 Angrenzend
+
+Zwei Felder grenzen aneinander, wenn ihre Chebyshev-Distanz (§2.1) genau 1 ist.
+
+Jedes Feld hat damit bis zu acht angrenzende Felder:
+
+```text
+X X X
+X T X
+X X X
+```
+
+Diese Definition gilt überall, wo diese Datei von „angrenzend“ spricht.
+
+### 2.3 Tile-ID
+
+Jedes Feld besitzt eine feste Tile-ID:
+
+```text
+Tile-ID = y × Kartenbreite + x
+```
+
+Ursprung `(0,0)` ist oben links, `x` wächst nach rechts, `y` nach unten.
+
+Die Tile-ID wird für deterministische Gleichstandsregeln verwendet (§23.1, §23.2).
+
 ## 3. Gelände
 
 ### 3.1 Ground
@@ -142,6 +168,7 @@ Zusätzliche Regeln:
 - Zwei Einheiten können nie dasselbe Feld besetzen.
 - Besiegte Einheiten blockieren kein Feld.
 - Diagonale Bewegung ist erlaubt.
+- Ecken schneiden ist verboten: Ein diagonaler Schritt ist nicht erlaubt, wenn mindestens eines der beiden orthogonal benachbarten Felder, zwischen denen die Diagonale hindurchführt, ein Wall-Feld ist oder von einer Einheit besetzt ist, unabhängig vom Team.
 - Eine Einheit muss ihre Bewegung nicht vollständig ausschöpfen.
 
 ## 5. Runden und Initiative
@@ -165,11 +192,14 @@ Die Initiative bleibt während der gesamten Runde fix.
 
 ### 5.1 Gleichstand
 
-Bei gleicher SPD entscheidet:
+Bei gleicher SPD entscheidet ausschliesslich die Unit-ID:
 
 ```text
-feste Unit-ID / Spawn-Reihenfolge
+niedrigere Unit-ID
+→ früherer Zug
 ```
+
+Unit-IDs werden in Spawn-Reihenfolge ab 1 vergeben. Spielerfiguren spawnen vor den Gegnern.
 
 Es wird kein Zufall verwendet.
 
@@ -204,10 +234,7 @@ Mögliche Aktionen:
 
 - Basic Attack
 - Skill
-- Item
 - Wait
-
-Items werden technisch als Aktion vorgesehen, in V0.1 jedoch noch nicht verwendet.
 
 Nach Ausführung einer Aktion oder `Wait` endet die Aktivierung.
 
@@ -330,7 +357,7 @@ Beeinflusst:
 ```text
 Zielfeld
 +
-alle 8 angrenzenden Felder
+alle 8 angrenzenden Felder (§2.2)
 ```
 
 Darstellung:
@@ -523,7 +550,7 @@ START_TURN
 
 Condition:
 
-Mindestens ein Gegner befindet sich auf einem angrenzenden Feld.
+Mindestens ein Gegner befindet sich auf einem angrenzenden Feld (§2.2).
 
 Effect:
 
@@ -547,7 +574,7 @@ Final Damage +20 %
 
 ### 19.3 Archer – Safe Distance
 
-Wenn beim Angriff kein Gegner direkt an den Archer angrenzt:
+Wenn beim Angriff kein Gegner an den Archer angrenzt (§2.2):
 
 ```text
 Final Damage +15 %
@@ -939,7 +966,11 @@ AI Profile: Aggressive
 
 Die KI plant nicht mehrere Züge voraus.
 
-Zu Beginn ihres Zuges ermittelt sie alle aktuell legalen Kombinationen aus Bewegung und Aktion und bewertet diese.
+Zu Beginn ihres Zuges ermittelt sie alle aktuell legalen Angriffsoptionen und bewertet diese.
+
+Eine Angriffsoption ist eine legale Kombination aus Bewegung und Angriffsaktion, die mindestens eine gegnerische Einheit trifft.
+
+Existiert mindestens eine Angriffsoption, werden ausschliesslich Angriffsoptionen bewertet. `WAIT` und reine Bewegung kommen nur in Frage, wenn keine Angriffsoption existiert; dann gilt §23.2.
 
 Grundscore:
 
@@ -957,16 +988,16 @@ Angriff besiegt das Ziel sicher.
 Ziel besitzt vor dem Angriff weniger als 50 % MaxHP.
 
 +30
-Ziel ist Healer oder Support.
+Ziel ist Healer.
 
 +10
-Angriff kann aus Distanz erfolgen, ohne direkt an das Ziel angrenzen zu müssen.
+Chebyshev-Distanz zwischen Angreifer (nach seiner Bewegung) und Ziel ist im Moment des Angriffs grösser als 1.
 
 +Damage
-Erwarteter verursachter Schaden.
+min(Schaden, verbleibende HP des Ziels).
 ```
 
-Bei AoE-Angriffen werden die Scores aller betroffenen gegnerischen Einheiten zusammengezählt.
+Bei AoE-Angriffen werden die Scores aller betroffenen gegnerischen Einheiten zusammengezählt. Der Bonus +10 wird dabei einmal pro Angriff vergeben; massgeblich ist die Distanz zwischen Angreifer und ausgewähltem Zielfeld.
 
 Verbündete werden bei:
 
@@ -987,15 +1018,21 @@ Bei gleichem Score entscheidet:
 4. niedrigere Tile-ID bei Tile-Targeting
 ```
 
+Gesamtschaden ist die Summe von min(Schaden, verbleibende HP des Ziels) über alle getroffenen gegnerischen Einheiten.
+
+Tile-ID gemäss §2.3.
+
 Es wird kein Zufall verwendet.
 
 ### 23.2 Kein Angriff möglich
 
-Falls kein Angriff innerhalb dieses Zuges möglich ist:
+Falls keine Angriffsoption existiert:
 
-1. Alle erreichbaren Felder werden geprüft.
-2. Die Einheit bewegt sich auf dem kürzesten legalen Weg in Richtung des nächstgelegenen Gegners.
-3. Danach endet ihre Aktivierung.
+1. Nächster Gegner ist der Gegner mit den geringsten Pfadkosten. Pfadkosten werden gemäss den Bewegungsregeln (§3, §4) bis zu einem an den Gegner angrenzenden Feld (§2.2) berechnet, nicht nach Chebyshev-Distanz. Andere Einheiten blockieren den Pfad wie in §4.
+2. Bei gleichen Pfadkosten gilt der Gegner mit der niedrigeren Unit-ID.
+3. Existiert zu keinem Gegner ein Pfad, wählt die Einheit `WAIT`.
+4. Sonst bewegt sich die Einheit auf dem kürzesten Pfad zum gewählten Gegner so weit, wie ihr MOV reicht. Zielfeld ist das mit dem MOV erreichbare Feld auf einem kürzesten Pfad mit den geringsten verbleibenden Pfadkosten zum Gegner. Bei gleichwertigen Feldern gilt die niedrigere Tile-ID (§2.3).
+5. Danach endet ihre Aktivierung.
 
 ## 24. Sieg und Niederlage
 
@@ -1050,7 +1087,45 @@ Wall
 
 Beide Teams starten grundsätzlich auf gegenüberliegenden Kartenhälften.
 
-Kein Gegner soll zu Kampfbeginn unmittelbar neben einer Spielerfigur stehen.
+Kein Gegner soll zu Kampfbeginn auf einem an eine Spielerfigur angrenzenden Feld (§2.2) stehen.
+
+Karte:
+
+```text
+    0 1 2 3 4 5 6 7 8 9
+ 0  . . 7 . . . . 8 . .
+ 1  . F . . 5 6 . . F .
+ 2  . F . . . . . . F .
+ 3  . . . H . . H . . .
+ 4  # # . # # # # . # #
+ 5  # # . # # # # . # #
+ 6  . . . H . . H . . .
+ 7  . F . . . . . . F .
+ 8  . F . . 1 2 . . F .
+ 9  . . 3 . . . . 4 . .
+```
+
+Legende:
+
+```text
+.  Ground
+F  Forest
+H  High Ground
+#  Wall
+```
+
+Ziffern sind Spawn-Felder auf Ground. Die Ziffer ist die Unit-ID (§5.1):
+
+```text
+1  Knight
+2  Spearman
+3  Archer
+4  Healer
+5  Enemy Melee
+6  Enemy Spearman
+7  Enemy Archer
+8  Enemy Mage
+```
 
 Die genaue Startposition darf während des Playtests angepasst werden.
 
