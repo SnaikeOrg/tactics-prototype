@@ -3,7 +3,7 @@ name: rulechange
 description: Übernimmt eine von Stephan getroffene Regelentscheidung in
   docs/RULES.md und leitet die Folgen für GitHub-Issues ab. Verwenden, wenn
   eine Spielregel geändert, ergänzt oder gestrichen werden soll.
-argument-hint: "<Entscheidung, Begründung, optional Ticketnummer>"
+argument-hint: "<Entscheidung, Begründung, optional Ticketnummer (sonst automatisch)>"
 disable-model-invocation: true
 ---
 
@@ -21,10 +21,29 @@ Anhalten und nachfragen, nicht selbst ergänzen, wenn:
 - die Entscheidung unvollständig ist (Zahl, Reichweite, Ziel oder Ausnahme
   fehlt, die der betroffene Abschnitt braucht),
 - sie einem anderen Abschnitt von RULES.md widerspricht (Abschnitt nennen),
-- die Begründung fehlt (DECISIONS.md braucht eine),
-- keine Ticketnummer für den Branch genannt ist.
+- die Begründung fehlt (DECISIONS.md braucht eine).
 
 Alle offenen Punkte in einer Nachricht sammeln.
+
+## Ticketnummer bestimmen
+
+Nennt die Entscheidung eine Ticketnummer, gilt diese. Sonst die nächste
+freie Nummer bestimmen:
+
+1. Alle Branch-Namen sammeln aus
+   - `git ls-remote --heads origin` und
+   - den Head-Branches aller PRs, offen und geschlossen (`list_pull_requests`
+     mit `state: all`, alle Seiten). Das erfasst auch gelöschte Branches und
+     Branches aus Forks.
+2. Aus Namen der Form `feat/<n>-…`, `fix/<n>-…` oder `chore/<n>-…` die Zahl
+   `<n>` nehmen. Die Nummern gelten über alle drei Präfixe hinweg, also
+   `feat/3` und `chore/3` nicht beide vergeben. Namen ohne Zahl ignorieren.
+3. Nummer = höchste gefundene Zahl + 1. Lücken nicht auffüllen.
+4. Die PR-Nummer ist keine Ticketnummer. `chore/8` kann PR #7 sein.
+
+Die Nummer im Vorschlag (Schritt 3) nennen. Unmittelbar vor dem Push prüfen,
+ob inzwischen ein Branch mit derselben Nummer existiert. Wenn ja, die Nummer
+neu bestimmen und den Branch umbenennen.
 
 ## Schritt 1: RULES.md anpassen
 
@@ -78,7 +97,8 @@ markieren.
 
 ## Schritt 3: Vorschlag ausgeben und anhalten
 
-1. Den RULES.md- und DECISIONS.md-Diff zeigen.
+1. Branch-Name mit Ticketnummer sowie den RULES.md- und DECISIONS.md-Diff
+   zeigen.
 2. Tabelle: Kat. | Issue-Nr oder „neu“ | Titel | was sich ändert | entsperrt
    (ja/nein).
 3. Für C: die Abnahme-Tests nennen, die heute fehlschlagen sollen, und die
