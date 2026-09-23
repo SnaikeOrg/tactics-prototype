@@ -19,3 +19,4 @@ Eine Zeile pro Entscheidung: Datum, Beschluss, Begründung. Dieselbe Diskussion 
 - 2026-09-23 — §23.2: Nächster Gegner nach Pfadkosten bis zu einem angrenzenden Feld, Gleichstand niedrigere Unit-ID, kein Pfad → WAIT. Beantwortet offene Fragen, die v1 blockieren.
 - 2026-09-23 — §2.3, §23.1, §23.2: Tile-ID = y × Kartenbreite + x, Ursprung oben links; Annäherung so weit wie MOV reicht, Gleichstand niedrigere Tile-ID. Beantwortet offene Fragen, die v1 blockieren.
 - 2026-09-23 — §25: Feste 10×10-Karte mit Legende und Spawn-Zuordnung für die erste Testmission. Beantwortet offene Fragen, die v1 blockieren.
+- 2026-09-23 — §23.1: Fünftes Gleichstandskriterium ist die niedrigere Tile-ID des Standfelds der Angriffsoption. Beantwortet offene Frage, die v1 blockiert (Angriffe auf dasselbe Ziel von verschiedenen, gleich teuren Standfeldern).
