@@ -1016,6 +1016,7 @@ Bei gleichem Score entscheidet:
 2. geringere Bewegungskosten
 3. niedrigere Unit-ID des primären Ziels
 4. niedrigere Tile-ID bei Tile-Targeting
+5. niedrigere Tile-ID des Standfelds der Angriffsoption
 ```
 
 Gesamtschaden ist die Summe von min(Schaden, verbleibende HP des Ziels) über alle getroffenen gegnerischen Einheiten.
