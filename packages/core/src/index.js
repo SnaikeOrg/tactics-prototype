@@ -12,3 +12,4 @@ export {
 export { createUnit, loadUnitTemplates } from "./unit.js";
 export { applyDamage, createGameState } from "./game-state.js";
 export { reachableTiles } from "./movement.js";
+export { isValidTarget } from "./targeting.js";
