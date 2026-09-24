@@ -115,7 +115,8 @@ es tut, jeweils mit
 - den beiden Lesarten,
 - ob ein Test die Lesart der Implementierung festschreibt.
 
-Nicht entscheiden, welche Lesart richtig ist. Keine Stelle gefunden: „keine
+Nicht entscheiden, welche Lesart richtig ist. Ein Vorschlag gehört in die
+vorgeschlagene Handlungsanweisung, nicht hierher. Keine Stelle gefunden: „keine
 Fragen“. Dieser Punkt hat keinen Status.
 
 ## Kommentar
@@ -135,9 +136,40 @@ Einen einzigen Kommentar in den PR schreiben (`add_issue_comment`):
 
 ### Fragen zur Regeltreue
 - …
+
+### Vorgeschlagene Handlungsanweisung
+1. …
 ```
 
 Sind Befunde da, fasst eine Zeile über der Tabelle zusammen: „N Befunde,
-siehe unten“. Die Zusammenfassung im Chat ist derselbe Text plus der Link
-zum Kommentar. Bei einem neuen Head-SHA gibt es einen neuen Kommentar. Alte
-Kommentare nicht bearbeiten.
+siehe unten“.
+
+### Vorgeschlagene Handlungsanweisung
+
+Der letzte Abschnitt des Kommentars. Er ist ein Vorschlag an den Menschen,
+keine Entscheidung. Du setzt ihn nicht selbst um. Nummerierte Schritte in
+dieser Reihenfolge, jeweils nur, wenn es den Fall gibt:
+
+1. **Befunde:** „Nicht mergen.“ Danach je Befund ein Schritt mit Verweis auf
+   die Nummer, zum Beispiel „[2] Test-Commit neu aufsetzen, sodass …“. Nenne
+   die kleinste Änderung, die den Befund behebt.
+2. **Nicht prüfbar:** Was nötig ist, damit der Punkt prüfbar wird, zum
+   Beispiel „`pnpm install` lokal wiederholen und `/pr-review` erneut
+   starten“.
+3. **Fragen zur Regeltreue:** Je Frage ein Schritt. Nenne, welche Lesart der
+   Code umsetzt und was die andere Lesart kosten würde (nur RULES.md
+   präzisieren, oder zusätzlich ein Folgeticket mit Code-Änderung). Einen
+   Vorschlag, welche Lesart gelten soll, darfst du machen, gekennzeichnet als
+   „Vorschlag“. Die Entscheidung trifft der Mensch, umgesetzt wird sie mit
+   `/rulechange`. Sag dazu, ob die Frage vor dem Merge geklärt sein muss,
+   also ob die andere Lesart diesen PR ändern würde, oder danach geklärt
+   werden kann.
+4. **Sonst:** „Keine Handlung aus diesem Review. Merge liegt beim Menschen.“
+
+Keine Schritte, die über den PR und seine Befunde oder Fragen hinausgehen.
+
+### Abschluss
+
+Die Zusammenfassung im Chat ist derselbe Text plus der Link zum Kommentar.
+Bei einem neuen Head-SHA gibt es einen neuen Kommentar. Alte Kommentare nicht
+bearbeiten.
