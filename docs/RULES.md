@@ -537,6 +537,8 @@ Dann gilt sofort:
 - Sie kann nicht mehr Ziel zukünftiger Aktionen sein.
 - Ein noch ausstehender Zug innerhalb derselben Runde entfällt.
 
+„Lebende Einheit“ bezeichnet in dieser Datei jede Einheit im Spielzustand.
+
 ## 19. Passives
 
 Jede Spielerfigur besitzt in V0.1 genau eine Passive.
@@ -1058,6 +1060,8 @@ Niederlage
 ```text
 Alle Spielerfiguren besiegt.
 ```
+
+Da besiegte Einheiten aus dem Spielzustand gelöscht werden (§18), heisst das: Sieg, sobald keine gegnerische Einheit mehr im Spielzustand ist; Niederlage, sobald keine Spielerfigur mehr im Spielzustand ist.
 
 V0.1 besitzt keine weiteren Missionsziele.
 
