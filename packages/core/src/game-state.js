@@ -48,6 +48,9 @@ export function createGameState({ map, units }) {
   return { map, units: [...units] };
 }
 
+/** §18: Eine Einheit ist besiegt, sobald HP ≤ 0. */
+const DEFEAT_HP = 0;
+
 /**
  * @typedef {object} DamageResult
  * @property {GameState} state
@@ -55,14 +58,31 @@ export function createGameState({ map, units }) {
  */
 
 /**
+ * Zieht einer Einheit Schaden von den aktuellen HP ab (§7). Fällt HP auf 0
+ * oder darunter, wird sie aus dem Spielzustand gelöscht (§18). Der übergebene
+ * Spielzustand bleibt unverändert.
+ *
  * @param {GameState} state
  * @param {number} unitId
  * @param {number} damage
  * @returns {DamageResult}
  */
 export function applyDamage(state, unitId, damage) {
-  void state;
-  void unitId;
-  void damage;
-  throw new Error("not implemented");
+  if (!Number.isInteger(damage) || damage < 0) {
+    throw new TypeError("applyDamage: Schaden muss eine Ganzzahl ab 0 sein");
+  }
+
+  const target = state.units.find(({ id }) => id === unitId);
+  if (!target) {
+    throw new Error(`applyDamage: Unit-ID ${unitId} ist nicht im Spielzustand`);
+  }
+
+  const hp = target.hp - damage;
+  // §18: besiegt bei HP ≤ 0, dann sofort aus dem Spielzustand gelöscht.
+  const defeated = hp <= DEFEAT_HP;
+  const units = defeated
+    ? state.units.filter(({ id }) => id !== unitId)
+    : state.units.map((unit) => (unit.id === unitId ? { ...unit, hp } : unit));
+
+  return { state: { map: state.map, units }, defeated };
 }
