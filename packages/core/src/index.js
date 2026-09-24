@@ -10,4 +10,4 @@ export {
   tileId,
 } from "./grid.js";
 export { createUnit, loadUnitTemplates } from "./unit.js";
-export { createGameState } from "./game-state.js";
+export { applyDamage, createGameState } from "./game-state.js";
