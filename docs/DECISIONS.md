@@ -20,3 +20,5 @@ Eine Zeile pro Entscheidung: Datum, Beschluss, Begründung. Dieselbe Diskussion 
 - 2026-09-23 — §2.3, §23.1, §23.2: Tile-ID = y × Kartenbreite + x, Ursprung oben links; Annäherung so weit wie MOV reicht, Gleichstand niedrigere Tile-ID. Beantwortet offene Fragen, die v1 blockieren.
 - 2026-09-23 — §25: Feste 10×10-Karte mit Legende und Spawn-Zuordnung für die erste Testmission. Beantwortet offene Fragen, die v1 blockieren.
 - 2026-09-23 — §23.1: Fünftes Gleichstandskriterium ist die niedrigere Tile-ID des Standfelds der Angriffsoption. Beantwortet offene Frage, die v1 blockiert (Angriffe auf dasselbe Ziel von verschiedenen, gleich teuren Standfeldern).
+- 2026-09-24 — Ticketnummer im Branch ist die GitHub-Issue-Nummer, kein eigener Branch-Zähler. Beide Zählungen kollidierten (Branch `chore/11` ≠ Issue #11).
+- 2026-09-24 — Test-first: Der Commit mit den neuen, roten Tests ist die einzige Ausnahme von „Commit nur nach grünem Test“. Er belegt, dass die Tests das fehlende Verhalten prüfen.
