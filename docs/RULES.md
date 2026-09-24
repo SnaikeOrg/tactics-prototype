@@ -134,6 +134,7 @@ Begehbar: Nein
 
 Walls:
 
+- können nie von einer Einheit besetzt sein, auch nicht beim Spawn;
 - blockieren Bewegung;
 - blockieren Pathfinding;
 - blockieren in V0.1 noch keine Fernkampfangriffe;
@@ -201,6 +202,8 @@ niedrigere Unit-ID
 
 Unit-IDs werden in Spawn-Reihenfolge ab 1 vergeben. Spielerfiguren spawnen vor den Gegnern.
 
+Die Unit-IDs werden beim Aufbau des Levels vergeben (§25) und bleiben während des ganzen Kampfs fest. Die ID einer besiegten Einheit wird nicht neu vergeben.
+
 Es wird kein Zufall verwendet.
 
 Jede lebende Einheit erhält pro Runde genau eine Aktivierung.
@@ -251,6 +254,13 @@ RES
 SPD
 MOV
 ```
+
+Jede Einheit führt zwei getrennte Werte:
+
+- `MaxHP`: der HP-Wert ihrer Vorlage (§20, §21). In V0.1 ändert er sich im Kampf nicht.
+- `HP`: die aktuellen Trefferpunkte. Zu Kampfbeginn gilt `HP = MaxHP`.
+
+Schaden und Heilung ändern nur `HP`.
 
 Nicht Bestandteil von V0.1:
 
@@ -522,7 +532,7 @@ HP ≤ 0
 
 Dann gilt sofort:
 
-- Die Einheit wird aus dem Kampf entfernt.
+- Die Einheit wird aus dem Kampf entfernt, das heisst aus dem Spielzustand gelöscht. Einen Zustand „besiegt, aber noch vorhanden“ gibt es nicht.
 - Sie blockiert kein Feld mehr.
 - Sie kann nicht mehr Ziel zukünftiger Aktionen sein.
 - Ein noch ausstehender Zug innerhalb derselben Runde entfällt.
