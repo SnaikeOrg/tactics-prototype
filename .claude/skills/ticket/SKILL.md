@@ -14,6 +14,26 @@ Genau ein Issue pro Aufruf. Wo dieser Skill „anhalten“ sagt: im Chat
 melden, was fehlt oder widerspricht, und auf Antwort warten. Nichts pushen,
 nichts ins Issue schreiben.
 
+## 0. Auf den neuesten Stand bringen
+
+Vor allem anderen, damit RULES.md, Code und Tests dem aktuellen `main`
+entsprechen:
+
+- `git status --porcelain` muss leer sein. Sonst anhalten und die Dateien
+  nennen. Nichts verwerfen oder stashen.
+- `git fetch origin main`
+- Branch `feat/<Issue-Nr>-<kurz>` direkt von `origin/main` anlegen:
+  `git switch -c feat/<Issue-Nr>-<kurz> origin/main`. Kebab-case, zum
+  Beispiel `feat/21-ki-optionen-bewerten`. Gibt es den Branch schon:
+  - nur lokal und ohne eigene Commits (etwa von einem abgebrochenen Aufruf):
+    mit `git switch -C … origin/main` neu setzen,
+  - mit eigenen Commits oder auf `origin`: anhalten.
+- `pnpm install --frozen-lockfile`, falls `main` neue Abhängigkeiten
+  mitbringt.
+
+Kein `git pull` auf den aktuellen Branch. Der kann ein alter Feature-Branch
+sein, und ein Pull würde `main` dort hineinmergen.
+
 ## 1. Verstehen
 
 - Issue lesen (`issue_read`). Die Abschnitte heissen `Bezug`, `Aufgabe`,
@@ -36,8 +56,6 @@ nichts ins Issue schreiben.
 
 ## 2. Tests zuerst
 
-- `git fetch origin main`, Branch `feat/<Issue-Nr>-<kurz>` von `origin/main`.
-  Kebab-case, zum Beispiel `feat/21-ki-optionen-bewerten`.
 - Testdatei: `packages/<paket>/tests/<thema>.test.js`, Stil wie
   `packages/core/tests/rng.test.js`. Importiert wird nur über
   `src/index.js`.
