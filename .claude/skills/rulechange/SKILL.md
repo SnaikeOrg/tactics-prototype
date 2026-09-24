@@ -3,7 +3,7 @@ name: rulechange
 description: Übernimmt eine von Stephan getroffene Regelentscheidung in
   docs/RULES.md und leitet die Folgen für GitHub-Issues ab. Verwenden, wenn
   eine Spielregel geändert, ergänzt oder gestrichen werden soll.
-argument-hint: "<Entscheidung, Begründung, optional Ticketnummer (sonst automatisch)>"
+argument-hint: "<Entscheidung, Begründung, optional Issue-Nummer>"
 disable-model-invocation: true
 ---
 
@@ -25,30 +25,17 @@ Anhalten und nachfragen, nicht selbst ergänzen, wenn:
 
 Alle offenen Punkte in einer Nachricht sammeln.
 
-## Ticketnummer bestimmen
+## Ticketnummer
 
-Nennt die Entscheidung eine Ticketnummer, gilt diese. Sonst die nächste
-freie Nummer bestimmen:
-
-1. Alle Branch-Namen sammeln aus
-   - `git ls-remote --heads origin` und
-   - den Head-Branches aller PRs, offen und geschlossen (`list_pull_requests`
-     mit `state: all`, alle Seiten). Das erfasst auch gelöschte Branches und
-     Branches aus Forks.
-2. Aus Namen der Form `feat/<n>-…`, `fix/<n>-…` oder `chore/<n>-…` die Zahl
-   `<n>` nehmen. Die Nummern gelten über alle drei Präfixe hinweg, also
-   `feat/3` und `chore/3` nicht beide vergeben. Namen ohne Zahl ignorieren.
-3. Nummer = höchste gefundene Zahl + 1. Lücken nicht auffüllen.
-4. Die PR-Nummer ist keine Ticketnummer. `chore/8` kann PR #7 sein.
-
-Die Nummer im Vorschlag (Schritt 3) nennen. Unmittelbar vor dem Push prüfen,
-ob inzwischen ein Branch mit derselben Nummer existiert. Wenn ja, die Nummer
-neu bestimmen und den Branch umbenennen.
+Die Ticketnummer ist immer eine GitHub-Issue-Nummer. Nennt die Entscheidung
+ein bestehendes Issue, gilt dessen Nummer. Sonst legt Schritt 4 nach „ok“
+ein Issue für die Regeländerung an, und der Branch bekommt dessen Nummer. Bis
+dahin arbeitest du lokal auf `chore/rules-<kurz>`.
 
 ## Schritt 1: RULES.md anpassen
 
-- `git fetch origin main`, dann Branch `chore/<Ticketnummer>-<kurz>` von
-  `origin/main` anlegen.
+- `git fetch origin main`, dann Branch `chore/<Issue-Nr>-<kurz>` von
+  `origin/main` anlegen, ohne Issue-Nr vorerst `chore/rules-<kurz>`.
 - Nur die betroffenen Abschnitte ändern. Keine Umformulierungen an anderer
   Stelle.
 - Abschnittsnummern nie ändern. Ein neuer Abschnitt bekommt die nächste freie
@@ -81,13 +68,13 @@ Prüfe ausserdem, ob `packages/core` das bisherige Verhalten schon umsetzt
 Ordne jede Zeile (geänderter Abschnitt × betroffenes Issue, oder ein
 Abschnitt ohne Issue) genau einer Kategorie zu:
 
-| Kat. | Wann | Folge |
-| ---- | ---- | ----- |
-| A neu | kein Issue und kein Code zum Verhalten | neues Ticket |
-| B anpassen | offenes Issue, Verhalten nicht umgesetzt, Regel bleibt | Issue-Text anpassen |
-| C Änderung | Verhalten in `core` umgesetzt (Issue geschlossen oder gar keins) | neues Änderungsticket, seine Abnahme-Tests müssen mit dem aktuellen Code fehlschlagen |
-| D schliessen | offenes Issue, Verhalten nicht umgesetzt, Regel entfällt | Issue schliessen, `state_reason: not_planned` |
-| E keine Folge | nur Klarstellung, Verhalten unverändert | nichts |
+| Kat.          | Wann                                                             | Folge                                                                                 |
+| ------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| A neu         | kein Issue und kein Code zum Verhalten                           | neues Ticket                                                                          |
+| B anpassen    | offenes Issue, Verhalten nicht umgesetzt, Regel bleibt           | Issue-Text anpassen                                                                   |
+| C Änderung    | Verhalten in `core` umgesetzt (Issue geschlossen oder gar keins) | neues Änderungsticket, seine Abnahme-Tests müssen mit dem aktuellen Code fehlschlagen |
+| D schliessen  | offenes Issue, Verhalten nicht umgesetzt, Regel entfällt         | Issue schliessen, `state_reason: not_planned`                                         |
+| E keine Folge | nur Klarstellung, Verhalten unverändert                          | nichts                                                                                |
 
 Wird eine umgesetzte Regel gestrichen, ist das C (Rückbau), nicht D.
 
@@ -97,8 +84,8 @@ markieren.
 
 ## Schritt 3: Vorschlag ausgeben und anhalten
 
-1. Branch-Name mit Ticketnummer sowie den RULES.md- und DECISIONS.md-Diff
-   zeigen.
+1. Das Issue für die Regeländerung (bestehende Nummer oder Titel und Body des
+   neuen) sowie den RULES.md- und DECISIONS.md-Diff zeigen.
 2. Tabelle: Kat. | Issue-Nr oder „neu“ | Titel | was sich ändert | entsperrt
    (ja/nein).
 3. Für C: die Abnahme-Tests nennen, die heute fehlschlagen sollen, und die
@@ -111,11 +98,15 @@ Kommt „ok“ mit Änderungen, Tabelle anpassen und erneut anhalten.
 
 In dieser Reihenfolge, damit Issues auf den PR verweisen können:
 
-1. Branch pushen, PR öffnen. Im Body die Tabelle aus Schritt 3.
-2. Issues anlegen oder ändern wie vorgeschlagen. Format wie in den
-   bestehenden Tickets. Gibt es noch keine, mindestens:
-   `Bezug: §X` / `Ziel` / `Abnahme` (prüfbare Kriterien) / `Regeländerung: PR #N`.
-3. D: mit Kommentar schliessen (welcher §, welcher PR).
-4. Entsperrte Issues: Label `blocked` entfernen, Kommentar mit dem
+1. Gibt es noch kein Issue für die Regeländerung: anlegen, Format wie die
+   bestehenden Tickets (`Bezug` / `Aufgabe` / `Abnahme` / `Nicht Teil dieses
+Tickets` / `Abhängig von`). Branch lokal umbenennen:
+   `git branch -m chore/<Issue-Nr>-<kurz>`.
+2. Branch pushen, PR öffnen. Titel `chore(<Issue-Nr>): …`, im Body
+   `Closes #<Issue-Nr>` und die Tabelle aus Schritt 3.
+3. Folge-Issues anlegen oder ändern wie vorgeschlagen, im selben Format.
+   Unter `Abhängig von` das Issue der Regeländerung eintragen.
+4. D: mit Kommentar schliessen (welcher §, welcher PR).
+5. Entsperrte Issues: Label `blocked` entfernen, Kommentar mit dem
    auflösenden §.
-5. Den PR-Body um die tatsächlichen Issue-Nummern ergänzen.
+6. Den PR-Body um die tatsächlichen Issue-Nummern ergänzen.

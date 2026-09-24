@@ -42,7 +42,7 @@ Keine Logikänderung ohne grünes `pnpm test` vom Root.
 
 ## Arbeitsregeln
 
-- Branch: `feat/`, `fix/` oder `chore/` plus Ticketnummer. Ein Feature, ein Branch, ein PR.
+- Branch: `feat/`, `fix/` oder `chore/` plus Ticketnummer. Die Ticketnummer ist die GitHub-Issue-Nummer. Ein Feature, ein Branch, ein PR.
 - Commit nach jedem grünen `pnpm test`, nicht nach der Sitzung.
 - Jede Logikänderung in `core` kommt mit Tests.
 - Keine neuen Abhängigkeiten ohne Rückfrage.
