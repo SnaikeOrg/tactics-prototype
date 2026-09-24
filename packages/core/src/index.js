@@ -11,3 +11,4 @@ export {
 } from "./grid.js";
 export { createUnit, loadUnitTemplates } from "./unit.js";
 export { applyDamage, createGameState } from "./game-state.js";
+export { reachableTiles } from "./movement.js";
