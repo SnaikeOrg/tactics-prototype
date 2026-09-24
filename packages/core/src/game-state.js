@@ -47,3 +47,22 @@ export function createGameState({ map, units }) {
 
   return { map, units: [...units] };
 }
+
+/**
+ * @typedef {object} DamageResult
+ * @property {GameState} state
+ * @property {boolean} defeated
+ */
+
+/**
+ * @param {GameState} state
+ * @param {number} unitId
+ * @param {number} damage
+ * @returns {DamageResult}
+ */
+export function applyDamage(state, unitId, damage) {
+  void state;
+  void unitId;
+  void damage;
+  throw new Error("not implemented");
+}
