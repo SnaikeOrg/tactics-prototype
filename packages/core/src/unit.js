@@ -61,7 +61,9 @@ import templates from "../data/unit-templates.json" with { type: "json" };
  * @property {Team} team
  * @property {string} templateId
  * @property {import("./grid.js").Position} position
- * @property {Stats} stats
+ * @property {number} hp Aktuelle Trefferpunkte (§7).
+ * @property {number} maxHp HP-Wert der Vorlage, im Kampf fest (§7).
+ * @property {Omit<Stats, "hp">} stats Übrige Basiswerte; HP führen `hp` und `maxHp`.
  */
 
 /**
@@ -85,11 +87,16 @@ export function createUnit(template, { id, team, position }) {
     );
   }
 
+  const { hp: maxHp, ...stats } = template.stats;
+
   return {
     id,
     team,
     templateId: template.id,
     position: { x: position.x, y: position.y },
-    stats: { ...template.stats },
+    // §7: Zu Kampfbeginn gilt HP = MaxHP.
+    hp: maxHp,
+    maxHp,
+    stats,
   };
 }
