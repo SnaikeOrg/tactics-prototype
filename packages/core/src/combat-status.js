@@ -11,6 +11,16 @@
  * @returns {CombatStatus}
  */
 export function combatStatus(state) {
-  void state;
-  throw new Error("not implemented");
+  // §24 i. V. m. §18: besiegte Einheiten sind aus dem Spielzustand gelöscht,
+  // also zählt jede Einheit im Spielzustand als lebend.
+  const hasTeam = (/** @type {import("./unit.js").Team} */ team) =>
+    state.units.some((unit) => unit.team === team);
+
+  if (!hasTeam("enemy")) {
+    return "victory";
+  }
+  if (!hasTeam("player")) {
+    return "defeat";
+  }
+  return "ongoing";
 }
