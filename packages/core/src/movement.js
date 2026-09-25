@@ -19,22 +19,21 @@ const DIRECTIONS = Object.freeze([
 ]);
 
 /**
- * Alle Felder, die die Einheit mit ihrem MOV erreicht, samt Kosten (§4).
- * Walls und Felder mit Einheiten beider Teams sind weder Ziel noch Durchgang,
- * Ecken schneiden ist verboten. Das eigene Standfeld ist nicht enthalten.
- * Sortiert nach Tile-ID (§2.3).
+ * Kürzeste Bewegungskosten (§3, §4) vom Standfeld der Einheit zu jedem Feld
+ * bis höchstens `maxCost`, als Map Tile-ID → Feld. Walls und Felder mit
+ * Einheiten beider Teams sind weder Ziel noch Durchgang, Ecken schneiden ist
+ * verboten. Das eigene Standfeld ist mit Kosten 0 enthalten.
  *
  * @param {import("./game-state.js").GameState} state
  * @param {number} unitId
- * @returns {ReachableTile[]}
+ * @param {number} maxCost
+ * @returns {Map<number, ReachableTile>}
  */
-export function reachableTiles(state, unitId) {
+export function pathCosts(state, unitId, maxCost) {
   const { map } = state;
   const unit = state.units.find(({ id }) => id === unitId);
   if (!unit) {
-    throw new Error(
-      `reachableTiles: Unit-ID ${unitId} ist nicht im Spielzustand`,
-    );
+    throw new Error(`pathCosts: Unit-ID ${unitId} ist nicht im Spielzustand`);
   }
 
   const occupied = new Set(
@@ -82,10 +81,7 @@ export function reachableTiles(state, unitId) {
         current.cost +
         /** @type {number} */ (terrainAt(map, next).movementCost);
       const nextId = tileId(map, next);
-      if (
-        cost > unit.stats.mov ||
-        cost >= (best.get(nextId)?.cost ?? Infinity)
-      ) {
+      if (cost > maxCost || cost >= (best.get(nextId)?.cost ?? Infinity)) {
         continue;
       }
       best.set(nextId, { position: next, cost });
@@ -93,6 +89,28 @@ export function reachableTiles(state, unitId) {
     }
   }
 
-  best.delete(startId);
+  return best;
+}
+
+/**
+ * Alle Felder, die die Einheit mit ihrem MOV erreicht, samt Kosten (§4).
+ * Walls und Felder mit Einheiten beider Teams sind weder Ziel noch Durchgang,
+ * Ecken schneiden ist verboten. Das eigene Standfeld ist nicht enthalten.
+ * Sortiert nach Tile-ID (§2.3).
+ *
+ * @param {import("./game-state.js").GameState} state
+ * @param {number} unitId
+ * @returns {ReachableTile[]}
+ */
+export function reachableTiles(state, unitId) {
+  const unit = state.units.find(({ id }) => id === unitId);
+  if (!unit) {
+    throw new Error(
+      `reachableTiles: Unit-ID ${unitId} ist nicht im Spielzustand`,
+    );
+  }
+
+  const best = pathCosts(state, unitId, unit.stats.mov);
+  best.delete(tileId(state.map, unit.position));
   return [...best.entries()].sort(([a], [b]) => a - b).map(([, tile]) => tile);
 }
