@@ -14,6 +14,12 @@ Genau ein Issue pro Aufruf. Wo dieser Skill „anhalten“ sagt: im Chat
 melden, was fehlt oder widerspricht, und auf Antwort warten. Nichts pushen,
 nichts ins Issue schreiben.
 
+Die letzte Zeile deiner Antwort ist immer genau eine dieser beiden, damit
+`/orchestrate` sie auswerten kann:
+
+- `ERGEBNIS: PR <Nummer>` nach Schritt 5,
+- `ERGEBNIS: STOPP <Schritt>: <ein Satz Grund>` bei jedem Anhalten.
+
 ## 0. Auf den neuesten Stand bringen
 
 Vor allem anderen, damit RULES.md, Code und Tests dem aktuellen `main`

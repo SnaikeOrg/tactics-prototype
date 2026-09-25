@@ -29,3 +29,4 @@ Eine Zeile pro Entscheidung: Datum, Beschluss, Begründung. Dieselbe Diskussion 
 - 2026-09-24 — §18: „Lebende Einheit“ heisst jede Einheit im Spielzustand. §5, §5.1 und §9 bleiben wörtlich, ohne einen eigenen Lebend-Status vorauszusetzen.
 - 2026-09-24 — §24: Sieg heisst keine gegnerische Einheit mehr im Spielzustand, Niederlage keine Spielerfigur mehr. Folgt aus §18, es muss nicht mitgezählt werden, wer besiegt wurde.
 - 2026-09-25 — CI: GitHub Actions führt auf jedem PR nach `main` und jedem Push auf `main` test, typecheck, lint und format:check aus. `/orchestrate` merged automatisch, deshalb braucht es ein Gate, das nicht von einem LLM abhängt.
+- 2026-09-25 — `/orchestrate` darf PRs nach `main` mergen, wenn das neueste `/pr-review` für den Head-SHA `MERGEBAR` ergibt; Stopps, Befunde und Regelfragen gehen an Stephan. Tickets laufen ohne Mensch durch, Entscheidungen bleiben beim Menschen.
