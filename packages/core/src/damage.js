@@ -1,3 +1,6 @@
+/** §12, §13: Mindestschaden eines Treffers. */
+const MIN_DAMAGE = 1;
+
 /**
  * @typedef {object} DamagingAbility
  * @property {import("./unit.js").DamageType} damageType
@@ -20,8 +23,13 @@
  * @returns {number}
  */
 export function calculateDamage(attacker, defender, ability) {
-  void attacker;
-  void defender;
-  void ability;
-  throw new Error("not implemented");
+  const raw =
+    ability.damageType === "MAGIC"
+      ? // §13
+        attacker.mag * ability.multiplier - defender.res
+      : // §12
+        attacker.atk * ability.multiplier - defender.def;
+
+  // §14: nach jedem Berechnungsschritt abrunden.
+  return Math.max(MIN_DAMAGE, Math.floor(raw));
 }
