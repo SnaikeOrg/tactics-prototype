@@ -21,7 +21,8 @@ nicht in deinem Gedächtnis, damit ein neuer Aufruf dort weitermacht.
 
 - `orchestrator:in-arbeit`: Ticket ist gestartet, PR noch nicht gemergt.
 - `orchestrator:wartet`: Stephan muss entscheiden oder nacharbeiten. Wird
-  nur von Stephan entfernt.
+  nur von Stephan entfernt. Entfernt er es bei offenem PR, heisst das: fertig
+  nachgearbeitet oder entschieden, der PR soll neu geprüft werden.
 
 ## 0. Start
 
@@ -34,6 +35,11 @@ nicht in deinem Gedächtnis, damit ein neuer Aufruf dort weitermacht.
   - kein PR → Label `orchestrator:wartet` setzen und Stephan melden
     („abgebrochener Lauf, Branch prüfen“). Nicht neu starten, `/ticket` hält
     bei einem vorhandenen Branch ohnehin an.
+- Wieder aufnehmen: Für jedes offene Issue ohne beide Labels, zu dem es einen
+  offenen PR mit `Closes #N` und mindestens einen `/pr-review`-Kommentar gibt:
+  Label `orchestrator:in-arbeit` setzen, weiter bei Schritt 3 mit diesem PR.
+  Immer neu prüfen, auch bei unverändertem Head-SHA, weil sich `main` oder
+  `docs/RULES.md` seitdem geändert haben können.
 
 ## 1. Nächstes Ticket wählen
 
@@ -103,10 +109,11 @@ Bei STOPP, NACHARBEIT, ENTSCHEIDUNG oder jedem Widerspruch:
 
 - Label `orchestrator:in-arbeit` durch `orchestrator:wartet` ersetzen.
 - Einen Kommentar ins Issue: Ergebnis, Grund in einem Satz, Link zum PR bzw.
-  zum Review-Kommentar.
-- Stephan benachrichtigen (`PushNotification`, unter 200 Zeichen; zusätzlich im
-  Chat): Issue, Ergebnis,
-  Grund, Link.
+  zum Review-Kommentar. Gibt es einen offenen PR, als letzter Satz: „Nach
+  Nacharbeit oder Entscheidung das Label `orchestrator:wartet` entfernen,
+  dann prüft `/orchestrate` den PR neu.“
+- Stephan benachrichtigen (`PushNotification`, unter 200 Zeichen; zusätzlich
+  im Chat): Issue, Ergebnis, Grund, Link.
 - Nichts selbst beheben, nichts pushen, `/rulechange` nie aufrufen.
 - Zurück zu Schritt 1. Issues, die direkt oder indirekt von einem wartenden
   Issue abhängen, sind nicht bereit, weil es offen bleibt.
