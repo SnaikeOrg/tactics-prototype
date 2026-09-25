@@ -17,4 +17,8 @@ export { calculateDamage } from "./damage.js";
 export { nextActivation, startRound } from "./initiative.js";
 export { applyTurnInput, beginActivation } from "./turn-phases.js";
 export { combatStatus } from "./combat-status.js";
-export { attackOptions, scoreAttackOption } from "./ai-options.js";
+export {
+  attackOptions,
+  chooseAttackOption,
+  scoreAttackOption,
+} from "./ai-options.js";
