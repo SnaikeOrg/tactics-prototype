@@ -18,8 +18,12 @@
  * @returns {Round}
  */
 export function startRound(state) {
-  void state;
-  throw new Error("not implemented");
+  // §5: höhere SPD zuerst; §5.1: bei Gleichstand niedrigere Unit-ID zuerst.
+  const order = [...state.units]
+    .sort((a, b) => b.stats.spd - a.stats.spd || a.id - b.id)
+    .map(({ id }) => id);
+
+  return { order, next: 0 };
 }
 
 /**
@@ -31,7 +35,18 @@ export function startRound(state) {
  * @returns {Activation}
  */
 export function nextActivation(state, round) {
-  void state;
-  void round;
-  throw new Error("not implemented");
+  const alive = new Set(state.units.map(({ id }) => id));
+
+  for (let index = round.next; index < round.order.length; index += 1) {
+    const unitId = round.order[index];
+    // §18: Der ausstehende Zug einer besiegten Einheit entfällt.
+    if (unitId !== undefined && alive.has(unitId)) {
+      return { unitId, round: { order: round.order, next: index + 1 } };
+    }
+  }
+
+  return {
+    unitId: null,
+    round: { order: round.order, next: round.order.length },
+  };
 }
