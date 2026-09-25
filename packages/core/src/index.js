@@ -11,7 +11,7 @@ export {
 } from "./grid.js";
 export { createUnit, loadUnitTemplates } from "./unit.js";
 export { applyDamage, createGameState } from "./game-state.js";
-export { reachableTiles } from "./movement.js";
+export { pathCosts, reachableTiles } from "./movement.js";
 export { isValidTarget } from "./targeting.js";
 export { calculateDamage } from "./damage.js";
 export { nextActivation, startRound } from "./initiative.js";
@@ -24,3 +24,4 @@ export {
 } from "./ai-options.js";
 export { approachNearestEnemy } from "./ai-approach.js";
 export { resolveAction } from "./resolve-action.js";
+export { createGreyboxLevel } from "./level.js";
