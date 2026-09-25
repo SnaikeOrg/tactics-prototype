@@ -47,6 +47,7 @@ Keine Logikänderung ohne grünes `pnpm test` vom Root.
 - Jede Logikänderung in `core` kommt mit Tests.
 - Keine neuen Abhängigkeiten ohne Rückfrage.
 - Merge nach `main`: Stephan, oder `/orchestrate`, wenn das neueste `/pr-review` für genau den Head-SHA `MERGEBAR` ergibt und die CI auf diesem SHA grün ist. Kein anderer Agent mergt.
+- Tests nach dem Test-Commit ändern: nur `/fix`, nur für einen als „(behebbar)“ markierten Befund aus `/pr-review`, und nur, indem der Test-Commit auf einem neuen Branch neu aufgebaut wird. Nie Force-Push.
 - Spielregeln: `docs/RULES.md`. Entscheidungen: `docs/DECISIONS.md` (eine Zeile, Datum, Begründung). Widerspricht der Code den Regeln, gewinnt `RULES.md`.
 
 ## Nicht tun

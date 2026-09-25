@@ -15,6 +15,8 @@ Das einzige, was du schreibst, ist ein Kommentar im PR.
 
 Maßstab sind das Issue, `docs/RULES.md`, `CLAUDE.md` und
 `.claude/skills/ticket/SKILL.md`. Was `/ticket` erlaubt, ist kein Befund.
+Ein PR, dessen Body „Ersetzt #…“ enthält, stammt von `/fix`: Sein
+Test-Commit wurde neu aufgebaut. Er wird genauso geprüft wie jeder andere.
 
 ## Vorbereitung
 
@@ -134,7 +136,7 @@ Ergebnis: MERGEBAR / NACHARBEIT / ENTSCHEIDUNG
 | … | … | … |
 
 ### Befunde
-- [2] packages/core/tests/x.test.js:14 – …
+- [2] packages/core/tests/x.test.js:14 – … (behebbar)
 
 ### Fragen zur Regeltreue
 - …
@@ -146,13 +148,23 @@ Ergebnis: MERGEBAR / NACHARBEIT / ENTSCHEIDUNG
 Sind Befunde da, fasst eine Zeile über der Tabelle zusammen: „N Befunde,
 siehe unten“.
 
+Jeder Befund endet mit genau einer Markierung:
+
+- **(behebbar)**: Es gibt genau eine kleinste Änderung, die den Befund
+  behebt, sie steht in der Handlungsanweisung, und sie ändert weder
+  `docs/RULES.md`, `packages/core/data` noch das Issue. `/fix` setzt sie
+  ohne Rückfrage um.
+- **(Entscheidung)**: sonst, zum Beispiel wenn mehrere Korrekturen möglich
+  sind oder das Issue selbst angepasst werden müsste.
+
 ### Ergebnis
 
 Genau ein Wert, geprüft in dieser Reihenfolge:
 
 1. **ENTSCHEIDUNG**: Mindestens eine Frage zur Regeltreue muss vor dem Merge
-   geklärt sein (siehe Handlungsanweisung, Schritt 3). Gilt auch, wenn es
-   zusätzlich Befunde gibt, weil die Entscheidung die Nacharbeit ändern kann.
+   geklärt sein (siehe Handlungsanweisung, Schritt 3), oder mindestens ein
+   Befund ist mit „(Entscheidung)“ markiert. Gilt auch, wenn es zusätzlich
+   behebbare Befunde gibt, weil die Entscheidung die Nacharbeit ändern kann.
 2. **NACHARBEIT**: Mindestens ein Punkt hat „Befund“ oder „nicht prüfbar“.
 3. **MERGEBAR**: sonst. Fragen, die nach dem Merge geklärt werden können,
    ändern daran nichts.
