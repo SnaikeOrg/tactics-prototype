@@ -62,3 +62,18 @@ export function attackOptions(state, unitId) {
   }
   return options;
 }
+
+/**
+ * Score einer Angriffsoption nach §23 (Grundscore und Bonuspunkte).
+ *
+ * @param {import("./game-state.js").GameState} state
+ * @param {number} unitId
+ * @param {AttackOption} option
+ * @returns {number}
+ */
+export function scoreAttackOption(state, unitId, option) {
+  void state;
+  void unitId;
+  void option;
+  throw new Error("not implemented");
+}
