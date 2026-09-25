@@ -130,3 +130,29 @@ export function scoreAttackOption(state, unitId, option) {
   score += Math.min(damage, target.hp);
   return score;
 }
+
+/**
+ * @typedef {AttackOption & {
+ *   score: number,
+ *   totalDamage: number,
+ *   targetTile?: import("./grid.js").Position,
+ * }} ScoredAttackOption
+ * Angriffsoption mit Score (§23) und Gesamtschaden (§23.1). `targetTile` ist
+ * das ausgewählte Zielfeld bei Tile-Targeting.
+ */
+
+/**
+ * Wählt die Angriffsoption mit dem höchsten Score (§23). Gleichstand nach
+ * §23.1: höherer Gesamtschaden, geringere Bewegungskosten, niedrigere Unit-ID
+ * des primären Ziels, niedrigere Tile-ID des Zielfelds bei Tile-Targeting,
+ * niedrigere Tile-ID des Standfelds. Ohne Zufall.
+ *
+ * @param {import("./grid.js").GameMap} map
+ * @param {readonly ScoredAttackOption[]} options
+ * @returns {ScoredAttackOption}
+ */
+export function chooseAttackOption(map, options) {
+  void map;
+  void options;
+  throw new Error("not implemented");
+}
