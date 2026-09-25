@@ -36,21 +36,30 @@ nicht in deinem Gedächtnis, damit ein neuer Aufruf dort weitermacht.
   - kein PR → Label `orchestrator:wartet` setzen und Stephan melden
     („abgebrochener Lauf, Branch prüfen“). Nicht neu starten, `/ticket` hält
     bei einem vorhandenen Branch ohnehin an.
-- Wieder aufnehmen: Für jedes offene Issue ohne beide Labels, zu dem es einen
-  offenen PR mit `Closes #N` und mindestens einen `/pr-review`-Kommentar gibt:
-  Label `orchestrator:in-arbeit` setzen, weiter bei Schritt 3 mit diesem PR.
-  Immer neu prüfen, auch bei unverändertem Head-SHA, weil sich `main` oder
-  `docs/RULES.md` seitdem geändert haben können.
 
 ## 1. Nächstes Ticket wählen
 
-- Alle offenen Issues lesen (`list_issues`, Status OPEN). Abhängigkeiten sind
-  die `#N` im Abschnitt `Abhängig von`.
-- Bereit ist ein Issue, wenn
-  - jede Abhängigkeit geschlossen ist,
-  - es keines der beiden Labels trägt,
-  - es keinen offenen PR mit `Closes #<Nr>` gibt.
-- Von den bereiten das mit der niedrigsten Nummer. Keines bereit → Schritt 6.
+Bei jedem Durchlauf neu, nicht nur beim Start. Alle offenen Issues lesen
+(`list_issues`, Status OPEN) und alle offenen PRs (`list_pull_requests`).
+Abhängigkeiten sind die `#N` im Abschnitt `Abhängig von`. Jedes offene Issue
+ohne `orchestrator:*`-Label fällt in genau eine dieser Gruppen:
+
+1. **Wieder aufnehmen**: Es gibt einen offenen PR mit `Closes #<Nr>`, und in
+   diesem PR mindestens einen `/pr-review`-Kommentar. Das heisst: Stephan hat
+   `orchestrator:wartet` entfernt, der PR soll neu geprüft werden. Label
+   `orchestrator:in-arbeit` setzen, weiter bei **Schritt 3** mit diesem PR.
+   Immer neu prüfen, auch bei unverändertem Head-SHA, weil sich `main` oder
+   `docs/RULES.md` geändert haben können. Nicht Schritt 2, `/ticket` würde am
+   vorhandenen Branch anhalten.
+2. **Fremder PR**: offener PR mit `Closes #<Nr>`, aber ohne
+   `/pr-review`-Kommentar. Überspringen und in Schritt 6 melden.
+3. **Neu**: kein offener PR und jede Abhängigkeit geschlossen. Weiter bei
+   Schritt 2.
+4. **Nicht bereit**: sonst.
+
+Gruppe 1 geht vor Gruppe 3. Innerhalb einer Gruppe die niedrigste
+Issue-Nummer. Keines in Gruppe 1 oder 3 → Schritt 6.
+
 - Nie mehr als ein Ticket gleichzeitig. Beide Skills brauchen dasselbe
   saubere Arbeitsverzeichnis.
 
@@ -158,6 +167,7 @@ Im Chat und als Benachrichtigung:
 
 - gemergt: Issue → PR,
 - wartet: Issue → Grund und Link,
+- übersprungen, fremder PR: Issue → PR,
 - nicht bereit: Issue → offene Abhängigkeiten.
 
 ## Nie
