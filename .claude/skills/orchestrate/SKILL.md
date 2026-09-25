@@ -2,8 +2,8 @@
 name: orchestrate
 description: Arbeitet die offenen GitHub-Issues in der Reihenfolge ihrer
   Abhängigkeiten ab. Pro Ticket setzt ein Subagent es mit /ticket um, ein
-  zweiter prüft den PR mit /pr-review, bei MERGEBAR wird gemergt. Alles
-  andere geht an Stephan.
+  zweiter prüft den PR mit /pr-review, behebbare Befunde behebt ein dritter
+  mit /fix, bei MERGEBAR wird gemergt. Alles andere geht an Stephan.
 argument-hint: "[max. Anzahl Tickets, Standard: alle]"
 disable-model-invocation: true
 ---
@@ -13,7 +13,8 @@ disable-model-invocation: true
 Limit: $ARGUMENTS (Repo `SnaikeOrg/tactics-prototype`)
 
 Du setzt nichts selbst um und prüfst nichts selbst. Du wählst Tickets aus,
-startest Subagents, wertest ihre Ergebniszeile aus, mergst bei MERGEBAR und
+startest Subagents (`/ticket`, `/pr-review`, `/fix`), wertest ihre
+Ergebniszeile aus, mergst bei MERGEBAR und
 benachrichtigst Stephan bei allem anderen. Der Stand steht in GitHub-Labels,
 nicht in deinem Gedächtnis, damit ein neuer Aufruf dort weitermacht.
 
@@ -86,6 +87,36 @@ nicht in deinem Gedächtnis, damit ein neuer Aufruf dort weitermacht.
   - Seine Zeile `Ergebnis:` stimmt mit der `ERGEBNIS:`-Zeile des Subagents
     überein.
   - Stimmt eins davon nicht: Schritt 5 („Review passt nicht zum Head“).
+- Ergebnis auswerten:
+  - `MERGEBAR` → Schritt 4.
+  - `NACHARBEIT` → Schritt 3a, wenn alle Bedingungen dort erfüllt sind,
+    sonst Schritt 5.
+  - `ENTSCHEIDUNG` oder `STOPP` → Schritt 5.
+
+## 3a. Beheben
+
+Nur wenn
+
+- kein Punkt im Review „nicht prüfbar“ ist,
+- jeder Befund mit „(behebbar)“ markiert ist,
+- es im Issue seit dem letzten Kommentar, der mit `**/orchestrate:` beginnt
+  (bzw. seit Beginn), weniger als 2 Kommentare gibt, die mit `/fix Runde`
+  beginnen.
+
+Sonst Schritt 5 („Befund nicht automatisch behebbar“ bzw. „2 Fix-Runden
+ohne MERGEBAR“).
+
+- Einen **neuen** Subagent starten:
+
+  > Repo `SnaikeOrg/tactics-prototype`, Arbeitsverzeichnis ist das
+  > Repo-Root. Führe den Skill `fix` mit Argument `<PR>` über das Skill-Tool
+  > aus und folge ihm genau. Du bist ein Subagent: Niemand beantwortet
+  > Rückfragen. Deine letzte Zeile ist die `ERGEBNIS:`-Zeile aus dem Skill.
+
+- `ERGEBNIS: PR <n>` → PR `<n>` lesen und bestätigen, dass er offen ist und
+  `Closes #<Nr>` enthält. Weiter mit Schritt 3 für PR `<n>`, mit einem neuen
+  Review-Agent.
+- `ERGEBNIS: STOPP …` oder keine gültige Zeile → Schritt 5.
 
 ## 4. Mergen
 
@@ -105,16 +136,19 @@ Nur wenn Schritt 3 `MERGEBAR` für den aktuellen Head-SHA ergibt:
 
 ## 5. An Stephan übergeben
 
-Bei STOPP, NACHARBEIT, ENTSCHEIDUNG oder jedem Widerspruch:
+Bei STOPP, ENTSCHEIDUNG, NACHARBEIT, die Schritt 3a nicht behebt, oder
+jedem Widerspruch:
 
 - Label `orchestrator:in-arbeit` durch `orchestrator:wartet` ersetzen.
-- Einen Kommentar ins Issue: Ergebnis, Grund in einem Satz, Link zum PR bzw.
+- Einen Kommentar ins Issue, beginnend mit `**/orchestrate: <Ergebnis>`:
+  Grund in einem Satz, Link zum PR bzw.
   zum Review-Kommentar. Gibt es einen offenen PR, als letzter Satz: „Nach
   Nacharbeit oder Entscheidung das Label `orchestrator:wartet` entfernen,
   dann prüft `/orchestrate` den PR neu.“
 - Stephan benachrichtigen (`PushNotification`, unter 200 Zeichen; zusätzlich
   im Chat): Issue, Ergebnis, Grund, Link.
-- Nichts selbst beheben, nichts pushen, `/rulechange` nie aufrufen.
+- Nichts selbst beheben, nichts pushen, `/rulechange` nie aufrufen. Beheben
+  darf nur der `/fix`-Subagent aus Schritt 3a.
 - Zurück zu Schritt 1. Issues, die direkt oder indirekt von einem wartenden
   Issue abhängen, sind nicht bereit, weil es offen bleibt.
 
