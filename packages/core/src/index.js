@@ -15,3 +15,4 @@ export { reachableTiles } from "./movement.js";
 export { isValidTarget } from "./targeting.js";
 export { calculateDamage } from "./damage.js";
 export { nextActivation, startRound } from "./initiative.js";
+export { applyTurnInput, beginActivation } from "./turn-phases.js";
