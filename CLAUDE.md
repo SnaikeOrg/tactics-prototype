@@ -46,7 +46,7 @@ Keine Logikänderung ohne grünes `pnpm test` vom Root.
 - Commit nach jedem grünen `pnpm test`, nicht nach der Sitzung.
 - Jede Logikänderung in `core` kommt mit Tests.
 - Keine neuen Abhängigkeiten ohne Rückfrage.
-- Merge nach `main`: Stephan, oder `/orchestrate`, wenn das neueste `/pr-review` für genau den Head-SHA `MERGEBAR` ergibt. Kein anderer Agent mergt.
+- Merge nach `main`: Stephan, oder `/orchestrate`, wenn das neueste `/pr-review` für genau den Head-SHA `MERGEBAR` ergibt und die CI auf diesem SHA grün ist. Kein anderer Agent mergt.
 - Spielregeln: `docs/RULES.md`. Entscheidungen: `docs/DECISIONS.md` (eine Zeile, Datum, Begründung). Widerspricht der Code den Regeln, gewinnt `RULES.md`.
 
 ## Nicht tun

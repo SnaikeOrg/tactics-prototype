@@ -85,8 +85,13 @@ nicht in deinem Gedächtnis, damit ein neuer Aufruf dort weitermacht.
 
 Nur wenn Schritt 3 `MERGEBAR` für den aktuellen Head-SHA ergibt:
 
+- CI prüfen: `pull_request_read` mit `get_check_runs`. Jeder Check auf dem
+  Head-SHA ist `completed` mit `success`. Laufen noch Checks, erneut
+  abfragen, bis alle fertig sind. Ein roter oder fehlender Check → Schritt 5
+  („CI rot“ bzw. „keine CI“), nicht mergen.
 - `merge_pull_request` mit Methode `merge` und dem Head-SHA als
-  `expectedHeadSha`, damit nichts gemergt wird, was nach dem Review gepusht wurde.
+  `expectedHeadSha`, damit nichts gemergt wird, was nach dem Review
+  gepusht wurde.
 - Bestätigen, dass das Issue geschlossen ist. Sonst Schritt 5.
 - Label `orchestrator:in-arbeit` entfernen, `git fetch origin main`.
 - Branches nicht löschen.
@@ -117,6 +122,7 @@ Im Chat und als Benachrichtigung:
 ## Nie
 
 - Code, Tests, `docs/RULES.md` oder `packages/core/data` ändern.
-- Einen PR mergen ohne `MERGEBAR`-Review für genau seinen Head-SHA.
+- Einen PR mergen ohne `MERGEBAR`-Review und grüne CI für genau seinen
+  Head-SHA.
 - Force-Push, Issues schliessen, Labels `orchestrator:wartet` entfernen.
 - Ein Ticket starten, dessen Abhängigkeiten nicht alle geschlossen sind.
