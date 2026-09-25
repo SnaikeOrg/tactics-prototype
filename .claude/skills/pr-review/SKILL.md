@@ -126,6 +126,8 @@ Einen einzigen Kommentar in den PR schreiben (`add_issue_comment`):
 ```
 ## /pr-review für <Head-SHA, 7 Zeichen>
 
+Ergebnis: MERGEBAR / NACHARBEIT / ENTSCHEIDUNG
+
 | # | Prüfpunkt | Status |
 |---|-----------|--------|
 | 1 | Abnahme | ok / Befund / nicht prüfbar |
@@ -143,6 +145,20 @@ Einen einzigen Kommentar in den PR schreiben (`add_issue_comment`):
 
 Sind Befunde da, fasst eine Zeile über der Tabelle zusammen: „N Befunde,
 siehe unten“.
+
+### Ergebnis
+
+Genau ein Wert, geprüft in dieser Reihenfolge:
+
+1. **ENTSCHEIDUNG**: Mindestens eine Frage zur Regeltreue muss vor dem Merge
+   geklärt sein (siehe Handlungsanweisung, Schritt 3). Gilt auch, wenn es
+   zusätzlich Befunde gibt, weil die Entscheidung die Nacharbeit ändern kann.
+2. **NACHARBEIT**: Mindestens ein Punkt hat „Befund“ oder „nicht prüfbar“.
+3. **MERGEBAR**: sonst. Fragen, die nach dem Merge geklärt werden können,
+   ändern daran nichts.
+
+Das Ergebnis ist eine Einordnung, keine Freigabe durch dich. Gemergt wird nur
+nach der Regel in `CLAUDE.md`.
 
 ### Vorgeschlagene Handlungsanweisung
 
@@ -164,12 +180,16 @@ dieser Reihenfolge, jeweils nur, wenn es den Fall gibt:
    `/rulechange`. Sag dazu, ob die Frage vor dem Merge geklärt sein muss,
    also ob die andere Lesart diesen PR ändern würde, oder danach geklärt
    werden kann.
-4. **Sonst:** „Keine Handlung aus diesem Review. Merge liegt beim Menschen.“
+4. **Sonst:** „Keine Handlung aus diesem Review. Mergebar nach der Regel in
+   `CLAUDE.md`.“
 
 Keine Schritte, die über den PR und seine Befunde oder Fragen hinausgehen.
 
 ### Abschluss
 
 Die Zusammenfassung im Chat ist derselbe Text plus der Link zum Kommentar.
+Die letzte Zeile im Chat ist `ERGEBNIS: <Wert> <Head-SHA, 7 Zeichen>`, damit
+`/orchestrate` sie auswerten kann. Musstest du anhalten, bevor ein Kommentar
+geschrieben war: `ERGEBNIS: STOPP: <ein Satz Grund>`.
 Bei einem neuen Head-SHA gibt es einen neuen Kommentar. Alte Kommentare nicht
 bearbeiten.
