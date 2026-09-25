@@ -22,3 +22,4 @@ export {
   chooseAttackOption,
   scoreAttackOption,
 } from "./ai-options.js";
+export { resolveAction } from "./resolve-action.js";
