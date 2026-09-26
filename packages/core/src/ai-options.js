@@ -104,18 +104,11 @@ export function scoreAttackOption(state, unitId, option) {
       `scoreAttackOption: Unit-ID ${option.targetId} ist nicht im Spielzustand`,
     );
   }
-  const template = loadUnitTemplates().find(({ id }) => id === unit.templateId);
-  if (!template) {
-    throw new Error(`scoreAttackOption: Vorlage ${unit.templateId} fehlt`);
-  }
-
-  const damage = calculateDamage(
-    unit.stats,
-    target.stats,
-    template.basicAttack,
-  );
+  // §23: min(Schaden, HP) erreicht die HP genau dann, wenn der Angriff das
+  // Ziel sicher besiegt.
+  const total = totalDamage(state, unitId, option);
   let score = 0;
-  if (damage >= target.hp) {
+  if (total >= target.hp) {
     score += LETHAL_BONUS;
   }
   if (target.hp < target.maxHp * WOUNDED_HP_RATIO) {
@@ -127,7 +120,7 @@ export function scoreAttackOption(state, unitId, option) {
   if (chebyshevDistance(option.position, target.position) > RANGED_DISTANCE) {
     score += RANGED_BONUS;
   }
-  score += Math.min(damage, target.hp);
+  score += total;
   return score;
 }
 
@@ -175,4 +168,37 @@ export function chooseAttackOption(map, options) {
   return options.reduce((best, candidate) =>
     compare(candidate, best) < 0 ? candidate : best,
   );
+}
+
+/**
+ * Gesamtschaden einer Angriffsoption nach §23.1: min(Schaden, verbleibende HP
+ * des Ziels). Ändert keinen Spielzustand.
+ *
+ * @param {import("./game-state.js").GameState} state
+ * @param {number} unitId
+ * @param {AttackOption} option
+ * @returns {number}
+ */
+export function totalDamage(state, unitId, option) {
+  const unit = state.units.find(({ id }) => id === unitId);
+  if (!unit) {
+    throw new Error(`totalDamage: Unit-ID ${unitId} ist nicht im Spielzustand`);
+  }
+  const target = state.units.find(({ id }) => id === option.targetId);
+  if (!target) {
+    throw new Error(
+      `totalDamage: Unit-ID ${option.targetId} ist nicht im Spielzustand`,
+    );
+  }
+  const template = loadUnitTemplates().find(({ id }) => id === unit.templateId);
+  if (!template) {
+    throw new Error(`totalDamage: Vorlage ${unit.templateId} fehlt`);
+  }
+
+  const damage = calculateDamage(
+    unit.stats,
+    target.stats,
+    template.basicAttack,
+  );
+  return Math.min(damage, target.hp);
 }
