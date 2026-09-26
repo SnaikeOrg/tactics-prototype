@@ -21,6 +21,7 @@ export {
   attackOptions,
   chooseAttackOption,
   scoreAttackOption,
+  totalDamage,
 } from "./ai-options.js";
 export { approachNearestEnemy } from "./ai-approach.js";
 export { resolveAction } from "./resolve-action.js";

@@ -176,3 +176,19 @@ export function chooseAttackOption(map, options) {
     compare(candidate, best) < 0 ? candidate : best,
   );
 }
+
+/**
+ * Gesamtschaden einer Angriffsoption nach §23.1: min(Schaden, verbleibende HP
+ * des Ziels). Ändert keinen Spielzustand.
+ *
+ * @param {import("./game-state.js").GameState} state
+ * @param {number} unitId
+ * @param {AttackOption} option
+ * @returns {number}
+ */
+export function totalDamage(state, unitId, option) {
+  void state;
+  void unitId;
+  void option;
+  throw new Error("not implemented");
+}
