@@ -1,12 +1,11 @@
 import {
   applyTurnInput,
   beginActivation,
-  combatStatus,
   createGreyboxLevel,
-  nextActivation,
+  endActivation,
   planAiActivation,
   resolveAction,
-  startRound,
+  startCombat,
 } from "@tactics/core";
 
 /**
@@ -162,32 +161,24 @@ export function runCombat({ roundLimit }) {
     throw new RangeError("runCombat: roundLimit muss eine Ganzzahl ab 1 sein");
   }
 
-  let state = createGreyboxLevel();
+  // §5, §18, §24: Runden, Initiative und Kampfende führt `core`.
+  let combat = startCombat(createGreyboxLevel());
   /** @type {LogEntry[]} */
   const log = [];
-  let rounds = 0;
 
-  while (rounds < roundLimit && combatStatus(state) === "ongoing") {
-    rounds += 1;
-    // §5: Initiative zu Rundenbeginn, danach fix.
-    let order = startRound(state);
-    for (;;) {
-      const activation = nextActivation(state, order);
-      order = activation.round;
-      if (activation.unitId === null) {
-        break;
-      }
-      const played = playActivation(state, activation.unitId, rounds);
-      state = played.state;
-      log.push(played.entry);
-      // §24: Der Kampf endet, sobald Sieg oder Niederlage feststeht.
-      if (combatStatus(state) !== "ongoing") {
-        break;
-      }
-    }
+  while (combat.activeUnitId !== null && combat.round <= roundLimit) {
+    const played = playActivation(
+      combat.state,
+      combat.activeUnitId,
+      combat.round,
+    );
+    log.push(played.entry);
+    combat = endActivation(combat, played.state);
   }
 
-  const status = combatStatus(state);
+  const { state, status } = combat;
+  // Beim Abbruch steht `combat` schon am Anfang der Runde nach dem Limit.
+  const rounds = status === "ongoing" ? roundLimit : combat.round;
   const result = status === "ongoing" ? ABORT_RESULT : RESULT_BY_STATUS[status];
   return { result, rounds, log, state };
 }
