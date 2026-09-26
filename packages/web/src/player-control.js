@@ -2,7 +2,11 @@ import {
   applyTurnInput,
   beginActivation,
   endActivation,
+  isValidTarget,
+  loadUnitTemplates,
+  previewAction,
   reachableTiles,
+  resolveAction,
   startCombat,
 } from "@tactics/core";
 
@@ -79,12 +83,35 @@ function skipEnemyActivations(combat) {
  * @returns {PlayerControl}
  */
 export function applyControlInput(control, input) {
-  const { combat, activation } = control;
-  if (activation === null) {
+  const { combat, activation, targetId } = control;
+  if (activation === null || activation.ended) {
     return control;
   }
+
+  // §22: Solange der Forecast offen ist, gelten nur Bestätigen und Abbrechen.
+  if (targetId !== null) {
+    if (input.type === "CANCEL") {
+      return { ...control, targetId: null };
+    }
+    if (input.type === "CONFIRM") {
+      return confirmAttack(combat, activation, targetId) ?? control;
+    }
+    return control;
+  }
+
   if (input.type === "CONFIRM" || input.type === "CANCEL") {
-    throw new Error("not implemented");
+    return control;
+  }
+
+  if (input.type === "CLICK_TILE") {
+    // §9: Ein Klick auf ein gültiges Ziel öffnet den Forecast (§22).
+    const clicked = combat.state.units.find(
+      ({ position }) =>
+        position.x === input.position.x && position.y === input.position.y,
+    );
+    if (clicked && attackTargetIds(control).includes(clicked.id)) {
+      return { ...control, targetId: clicked.id };
+    }
   }
 
   /** @type {import("../../core/src/turn-phases.js").TurnInput} */
@@ -106,6 +133,60 @@ export function applyControlInput(control, input) {
     activation: result.activation,
     targetId: null,
   };
+}
+
+/**
+ * Führt die bestätigte Basic Attack aus: ACTION verbraucht die Action und
+ * beendet die Aktivierung (§6), `resolveAction` wendet den Schaden an und
+ * entfernt besiegte Einheiten (§18). `null`, wenn die Aktion abgelehnt wird.
+ *
+ * @param {import("../../core/src/combat-flow.js").Combat} combat
+ * @param {import("../../core/src/turn-phases.js").ActivationPhase} activation
+ * @param {number} targetId
+ * @returns {PlayerControl | null}
+ */
+function confirmAttack(combat, activation, targetId) {
+  const turn = applyTurnInput(combat.state, activation, { type: "ACTION" });
+  if (!turn.accepted) {
+    return null;
+  }
+  const resolved = resolveAction(turn.state, {
+    type: "BASIC_ATTACK",
+    attackerId: activation.unitId,
+    targetId,
+  });
+  if (!resolved.accepted) {
+    return null;
+  }
+  return skipEnemyActivations(endActivation(combat, resolved.state));
+}
+
+/**
+ * Gültige Ziele der Basic Attack der aktiven Spielerfigur von ihrem
+ * aktuellen Feld aus (§8, §9). Leer, wenn keine Action mehr offen ist (§6).
+ *
+ * @param {PlayerControl} control
+ * @returns {number[]}
+ */
+function attackTargetIds(control) {
+  const { combat, activation } = control;
+  if (activation === null || activation.ended) {
+    return [];
+  }
+  const attacker = combat.state.units.find(
+    ({ id }) => id === activation.unitId,
+  );
+  const template = loadUnitTemplates().find(
+    ({ id }) => id === attacker?.templateId,
+  );
+  if (!attacker || !template) {
+    return [];
+  }
+  return combat.state.units
+    .filter(({ id }) =>
+      isValidTarget(combat.state, attacker.id, template.basicAttack, id),
+    )
+    .map(({ id }) => id);
 }
 
 /**
@@ -140,6 +221,15 @@ export function createControlView(control) {
  * @returns {AttackView}
  */
 export function createAttackView(control) {
-  void control;
-  throw new Error("not implemented");
+  const { activation, targetId } = control;
+  // §22: Der Forecast verändert den Spielzustand nie.
+  const forecast =
+    activation === null || targetId === null
+      ? null
+      : previewAction(control.combat.state, {
+          type: "BASIC_ATTACK",
+          attackerId: activation.unitId,
+          targetId,
+        });
+  return { targetIds: attackTargetIds(control), forecast };
 }
