@@ -14,6 +14,7 @@ export function renderChoice(seed, items) {
 export { createBoardView } from "./board-view.js";
 export {
   applyControlInput,
+  createAttackView,
   createControlView,
   startPlayerControl,
 } from "./player-control.js";

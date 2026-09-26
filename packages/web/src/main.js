@@ -1,6 +1,7 @@
 import { createGreyboxLevel } from "@tactics/core";
 import {
   applyControlInput,
+  createAttackView,
   createBoardView,
   createControlView,
   startPlayerControl,
@@ -16,6 +17,8 @@ import {
 function render(root, control) {
   const view = createBoardView(control.combat.state);
   const controlView = createControlView(control);
+  const attackView = createAttackView(control);
+  const targets = new Set(attackView.targetIds);
   const movable = new Set(
     controlView.movableTiles.map(({ x, y }) => `${x},${y}`),
   );
@@ -43,6 +46,37 @@ function render(root, control) {
   waitButton.disabled = controlView.activeUnitId === null;
   waitButton.addEventListener("click", () => send({ type: "WAIT" }));
   hud.append(roundLine, "Initiative:", orderLine, waitButton);
+
+  const panel = document.createElement("div");
+  panel.className = "forecast";
+  const { forecast } = attackView;
+  if (forecast) {
+    waitButton.disabled = true;
+    const title = document.createElement("strong");
+    title.textContent = `Basic Attack → Unit ${forecast.targetId}`;
+    const hpLine = document.createElement("span");
+    hpLine.textContent = `Target HP ${forecast.targetHpBefore} → ${forecast.targetHpAfter}`;
+    const damageLine = document.createElement("span");
+    damageLine.textContent = `Damage ${forecast.damage}`;
+    panel.append(title, hpLine, damageLine);
+    if (forecast.lethal) {
+      const lethal = document.createElement("span");
+      lethal.className = "forecast-lethal";
+      lethal.textContent = "LETHAL";
+      panel.append(lethal);
+    }
+    const confirmButton = document.createElement("button");
+    confirmButton.type = "button";
+    confirmButton.textContent = "Bestätigen";
+    confirmButton.addEventListener("click", () => send({ type: "CONFIRM" }));
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.textContent = "Abbrechen";
+    cancelButton.addEventListener("click", () => send({ type: "CANCEL" }));
+    panel.append(confirmButton, cancelButton);
+  } else {
+    panel.hidden = true;
+  }
 
   const board = document.createElement("div");
   board.className = "board";
@@ -72,6 +106,9 @@ function render(root, control) {
       if (id === controlView.activeUnitId) {
         unit.classList.add("unit-active");
       }
+      if (targets.has(id)) {
+        cell.classList.add("tile-target");
+      }
 
       const name = document.createElement("strong");
       name.textContent = `${id} ${className}`;
@@ -87,7 +124,7 @@ function render(root, control) {
     board.append(cell);
   }
 
-  root.replaceChildren(hud, board);
+  root.replaceChildren(hud, panel, board);
 }
 
 const root = document.getElementById("app");
