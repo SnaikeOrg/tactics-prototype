@@ -28,3 +28,4 @@ export { resolveAction } from "./resolve-action.js";
 export { previewAction } from "./preview-action.js";
 export { createGreyboxLevel } from "./level.js";
 export { planAiActivation } from "./ai-activation.js";
+export { endActivation, startCombat } from "./combat-flow.js";
