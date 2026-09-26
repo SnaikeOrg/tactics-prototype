@@ -4,9 +4,65 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>tactics-prototype</title>
+    <style>
+      :root {
+        --tile-size: 84px;
+        font-family: system-ui, sans-serif;
+        font-size: 11px;
+      }
+      body {
+        margin: 16px;
+        background: #f4f4f4;
+        color: #111;
+      }
+      .board {
+        display: grid;
+        gap: 2px;
+        width: max-content;
+      }
+      .tile {
+        position: relative;
+        width: var(--tile-size);
+        height: var(--tile-size);
+        box-sizing: border-box;
+        padding: 3px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .terrain {
+        opacity: 0.7;
+      }
+      .terrain-ground {
+        background: #e2dccb;
+      }
+      .terrain-forest {
+        background: #7fae7a;
+      }
+      .terrain-high-ground {
+        background: #c9a66b;
+      }
+      .terrain-wall {
+        background: #444;
+        color: #eee;
+      }
+      .unit {
+        display: flex;
+        flex-direction: column;
+        padding: 2px;
+        border-radius: 3px;
+        color: #fff;
+      }
+      .unit-player {
+        background: #2a5bd7;
+      }
+      .unit-enemy {
+        background: #c62828;
+      }
+    </style>
   </head>
   <body>
-    <p id="status">booting</p>
+    <div id="app">booting</div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
