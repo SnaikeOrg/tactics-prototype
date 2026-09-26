@@ -19,15 +19,21 @@ import { loadUnitTemplates } from "./unit.js";
  */
 
 /**
- * Löst eine Aktion auf und verändert den Spielzustand (§15, §22). Ein
- * ungültiges Ziel wird abgelehnt, der Spielzustand bleibt dann unverändert.
- * Der übergebene Spielzustand wird nie verändert.
+ * @typedef {object} PlannedHit
+ * @property {import("./unit.js").Unit} target
+ * @property {number} damage
+ */
+
+/**
+ * Prüft das Ziel einer Basic Attack und berechnet ihren Schaden, ohne den
+ * Spielzustand zu verändern. Gemeinsame Grundlage von `resolveAction()` und
+ * `previewAction()` (§22). Ein ungültiges Ziel ergibt `null`.
  *
  * @param {import("./game-state.js").GameState} state
  * @param {Action} action
- * @returns {ActionResult}
+ * @returns {PlannedHit | null}
  */
-export function resolveAction(state, action) {
+export function planBasicAttack(state, action) {
   if (action.type !== "BASIC_ATTACK") {
     throw new Error(
       `resolveAction: Aktion ${action.type} wird noch nicht unterstützt`,
@@ -53,15 +59,37 @@ export function resolveAction(state, action) {
 
   // §9, §8: nur ein gültiges ENEMY-Ziel in Reichweite; §10.1 SINGLE.
   if (!isValidTarget(state, attacker.id, ability, action.targetId)) {
-    return { accepted: false, state };
+    return null;
   }
   const target = state.units.find(({ id }) => id === action.targetId);
   if (!target) {
-    return { accepted: false, state };
+    return null;
   }
 
-  // §15: Schaden berechnen → HP reduzieren → Tod prüfen.
-  const damage = calculateDamage(attacker.stats, target.stats, ability);
+  // §15: Schaden berechnen.
+  return {
+    target,
+    damage: calculateDamage(attacker.stats, target.stats, ability),
+  };
+}
+
+/**
+ * Löst eine Aktion auf und verändert den Spielzustand (§15, §22). Ein
+ * ungültiges Ziel wird abgelehnt, der Spielzustand bleibt dann unverändert.
+ * Der übergebene Spielzustand wird nie verändert.
+ *
+ * @param {import("./game-state.js").GameState} state
+ * @param {Action} action
+ * @returns {ActionResult}
+ */
+export function resolveAction(state, action) {
+  const hit = planBasicAttack(state, action);
+  if (!hit) {
+    return { accepted: false, state };
+  }
+  const { target, damage } = hit;
+
+  // §15: HP reduzieren → Tod prüfen.
   const { state: next } = applyDamage(state, target.id, damage);
 
   // §15: Trigger abhandeln — leer, bis Passives (v2) umgesetzt sind.

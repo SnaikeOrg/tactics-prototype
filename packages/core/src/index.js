@@ -25,4 +25,5 @@ export {
 } from "./ai-options.js";
 export { approachNearestEnemy } from "./ai-approach.js";
 export { resolveAction } from "./resolve-action.js";
+export { previewAction } from "./preview-action.js";
 export { createGreyboxLevel } from "./level.js";
