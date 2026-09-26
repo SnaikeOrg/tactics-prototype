@@ -1,3 +1,11 @@
+import {
+  applyTurnInput,
+  beginActivation,
+  endActivation,
+  reachableTiles,
+  startCombat,
+} from "@tactics/core";
+
 /**
  * @typedef {object} PlayerControl
  * @property {import("../../core/src/combat-flow.js").Combat} combat Laufender Kampf (§5, §24).
@@ -25,8 +33,28 @@
  * @returns {PlayerControl}
  */
 export function startPlayerControl(state) {
-  void state;
-  throw new Error("not implemented");
+  return skipEnemyActivations(startCombat(state));
+}
+
+/**
+ * Übergangslösung bis zu den Gegnerzügen: gegnerische Aktivierungen enden
+ * ohne Eingabe, bis eine Spielerfigur aktiv ist oder der Kampf entschieden
+ * ist (§24).
+ *
+ * @param {import("../../core/src/combat-flow.js").Combat} combat
+ * @returns {PlayerControl}
+ */
+function skipEnemyActivations(combat) {
+  let current = combat;
+  while (current.activeUnitId !== null) {
+    const activeId = current.activeUnitId;
+    const unit = current.state.units.find(({ id }) => id === activeId);
+    if (unit?.team === "player") {
+      return { combat: current, activation: beginActivation(activeId) };
+    }
+    current = endActivation(current, current.state);
+  }
+  return { combat: current, activation: null };
 }
 
 /**
@@ -38,9 +66,29 @@ export function startPlayerControl(state) {
  * @returns {PlayerControl}
  */
 export function applyControlInput(control, input) {
-  void control;
-  void input;
-  throw new Error("not implemented");
+  const { combat, activation } = control;
+  if (activation === null) {
+    return control;
+  }
+
+  /** @type {import("../../core/src/turn-phases.js").TurnInput} */
+  const turnInput =
+    input.type === "CLICK_TILE"
+      ? { type: "MOVE", to: input.position }
+      : { type: "WAIT" };
+  const result = applyTurnInput(combat.state, activation, turnInput);
+  if (!result.accepted) {
+    return control;
+  }
+
+  // §6: Nach WAIT endet die Aktivierung, die nächste Einheit ist dran (§5).
+  if (result.activation.ended) {
+    return skipEnemyActivations(endActivation(combat, result.state));
+  }
+  return {
+    combat: { ...combat, state: result.state },
+    activation: result.activation,
+  };
 }
 
 /**
@@ -51,6 +99,19 @@ export function applyControlInput(control, input) {
  * @returns {ControlView}
  */
 export function createControlView(control) {
-  void control;
-  throw new Error("not implemented");
+  const { combat, activation } = control;
+  // §6: genau einmal Movement pro Aktivierung.
+  const movableTiles =
+    activation === null || activation.moved || activation.ended
+      ? []
+      : reachableTiles(combat.state, activation.unitId).map(
+          ({ position }) => position,
+        );
+
+  return {
+    round: combat.round,
+    initiativeOrder: [...combat.initiative.order],
+    activeUnitId: activation === null ? null : activation.unitId,
+    movableTiles,
+  };
 }
