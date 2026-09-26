@@ -56,7 +56,10 @@ Die Ausgabe im PR-Text zählt nicht. Selbst ausführen.
 
 - Der Test-Commit enthält nur Testdateien und Stubs. Ein Stub ist eine
   Funktion, deren Rumpf nur `throw new Error("not implemented")` ist, plus
-  der Export in `index.js`. Jede andere Logik im Test-Commit ist ein Befund.
+  der Export in `index.js`. Ein Stub ist auch ein Einstiegspunkt (Skript
+  plus Eintrag in `package.json`), den ein Test aufruft, der nur Stubs
+  aufruft und keine eigene Logik enthält. Jede andere Logik im Test-Commit
+  ist ein Befund.
 - Test-Commit auschecken (`git checkout --detach <sha>`), `pnpm install
 --frozen-lockfile`, `pnpm test`. Jeder neue Test muss fehlschlagen, und
   zwar an einer Assertion oder an „not implemented“. Ein Import- oder
@@ -94,7 +97,11 @@ origin/main...pr-<PR> -- 'packages/*/src/**'`) danach suchen.
 - Jeder Treffer ist ein Befund, ausser er ist
   - ein Wert in `packages/core/data` oder
   - eine benannte Regelkonstante mit §-Kommentar, deren Wert in genau diesem
-    Abschnitt von RULES.md steht.
+    Abschnitt von RULES.md steht, oder
+  - ein benannter Simulationsparameter in einem Einstiegspunkt von
+    `packages/sim`, der als Parameter übergeben wird und als Annahme in
+    `docs/DECISIONS.md` steht. In der Funktion, die den Parameter bekommt,
+    bleibt jeder Treffer ein Befund.
 - Ebenso ein Befund: eine Verzweigung auf konkrete Test-IDs oder
   -Koordinaten, etwa `if (unitId === 2)`.
 
