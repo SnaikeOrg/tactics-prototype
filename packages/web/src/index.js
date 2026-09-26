@@ -10,3 +10,5 @@ import { createRng, pick } from "@tactics/core";
 export function renderChoice(seed, items) {
   return pick(createRng(seed), items);
 }
+
+export { createBoardView } from "./board-view.js";
