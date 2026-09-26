@@ -11,6 +11,11 @@ import { loadUnitTemplates } from "./unit.js";
  * @typedef {object} ActionResult
  * @property {boolean} accepted
  * @property {import("./game-state.js").GameState} state
+ * @property {number} [damage] Angewandter Schaden, nur bei akzeptierter
+ *   Aktion (§12, §13).
+ * @property {number} [targetHp] HP des Ziels nach dem Schaden, nur bei
+ *   akzeptierter Aktion. 0 oder weniger heisst besiegt (§18), auch wenn das
+ *   Ziel schon aus dem Spielzustand entfernt ist.
  */
 
 /**
@@ -61,5 +66,10 @@ export function resolveAction(state, action) {
 
   // §15: Trigger abhandeln — leer, bis Passives (v2) umgesetzt sind.
   // §15: Kein automatischer Gegenangriff. Die Aktion ist beendet.
-  return { accepted: true, state: next };
+  return {
+    accepted: true,
+    state: next,
+    damage,
+    targetHp: target.hp - damage,
+  };
 }
