@@ -19,6 +19,8 @@ function render(root, control) {
   const controlView = createControlView(control);
   const attackView = createAttackView(control);
   const targets = new Set(attackView.targetIds);
+  const recent = new Set(controlView.recentUnitIds);
+  const decided = controlView.result !== null;
   const movable = new Set(
     controlView.movableTiles.map(({ x, y }) => `${x},${y}`),
   );
@@ -45,7 +47,17 @@ function render(root, control) {
   waitButton.textContent = "Warten";
   waitButton.disabled = controlView.activeUnitId === null;
   waitButton.addEventListener("click", () => send({ type: "WAIT" }));
-  hud.append(roundLine, "Initiative:", orderLine, waitButton);
+  const restartButton = document.createElement("button");
+  restartButton.type = "button";
+  restartButton.textContent = "Neu starten";
+  restartButton.addEventListener("click", () => send({ type: "RESTART" }));
+  hud.append(roundLine, "Initiative:", orderLine, waitButton, restartButton);
+  if (controlView.result !== null) {
+    const result = document.createElement("strong");
+    result.className = "result";
+    result.textContent = controlView.result;
+    hud.append(result);
+  }
 
   const panel = document.createElement("div");
   panel.className = "forecast";
@@ -90,9 +102,12 @@ function render(root, control) {
       cell.classList.add("tile-movable");
     }
     const position = { x: tile.x, y: tile.y };
-    cell.addEventListener("click", () =>
-      send({ type: "CLICK_TILE", position }),
-    );
+    // §24: Nach Sieg oder Niederlage nimmt das Feld keine Eingaben mehr an.
+    if (!decided) {
+      cell.addEventListener("click", () =>
+        send({ type: "CLICK_TILE", position }),
+      );
+    }
 
     const terrain = document.createElement("span");
     terrain.className = "terrain";
@@ -105,6 +120,9 @@ function render(root, control) {
       unit.className = `unit ${isPlayer ? "unit-player" : "unit-enemy"}`;
       if (id === controlView.activeUnitId) {
         unit.classList.add("unit-active");
+      }
+      if (recent.has(id)) {
+        unit.classList.add("unit-recent");
       }
       if (targets.has(id)) {
         cell.classList.add("tile-target");
@@ -124,7 +142,23 @@ function render(root, control) {
     board.append(cell);
   }
 
-  root.replaceChildren(hud, panel, board);
+  const log = document.createElement("ol");
+  log.className = "log";
+  for (const entry of control.log) {
+    const line = document.createElement("li");
+    const move = `(${entry.from.x},${entry.from.y}) → (${entry.to.x},${entry.to.y})`;
+    const action =
+      entry.action.type === "BASIC_ATTACK"
+        ? `BASIC_ATTACK → Unit ${entry.action.targetId}, Schaden ${entry.action.damage}, Ziel-HP ${entry.targetHp}`
+        : "WAIT";
+    line.textContent = `Runde ${entry.round} · Unit ${entry.unitId} · ${move} · ${action}`;
+    log.append(line);
+  }
+
+  const layout = document.createElement("div");
+  layout.className = "layout";
+  layout.append(board, log);
+  root.replaceChildren(hud, panel, layout);
 }
 
 const root = document.getElementById("app");
