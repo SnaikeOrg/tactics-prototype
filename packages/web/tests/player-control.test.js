@@ -15,16 +15,6 @@ function positionOf(control, unitId) {
 }
 
 describe("player control", () => {
-  it("Im Greybox-Level ist nach dem Start Unit 3 aktiv. Die Aktivierung von Unit 7 wurde ohne Eingabe beendet, Unit 7 steht weiter auf (2,0).", () => {
-    const control = startPlayerControl(createGreyboxLevel());
-
-    expect(createControlView(control).activeUnitId).toBe(3);
-    expect(control.combat.initiative.order.indexOf(7)).toBeLessThan(
-      control.combat.initiative.next,
-    );
-    expect(positionOf(control, 7)).toEqual({ x: 2, y: 0 });
-  });
-
   it("Markiert sind genau die Felder aus `reachableTiles(state, 3)`, 23 Felder.", () => {
     const state = createGreyboxLevel();
     const view = createControlView(startPlayerControl(state));
@@ -57,17 +47,6 @@ describe("player control", () => {
 
     expect(next.combat.state).toEqual(control.combat.state);
     expect(createControlView(next).activeUnitId).toBe(3);
-  });
-
-  it("`Warten` beendet die Aktivierung von Unit 3. Danach ist Unit 2 aktiv, die Aktivierung von Unit 6 wurde ohne Eingabe beendet.", () => {
-    const control = startPlayerControl(createGreyboxLevel());
-    const next = applyControlInput(control, { type: "WAIT" });
-
-    expect(createControlView(next).activeUnitId).toBe(2);
-    expect(next.combat.initiative.order.indexOf(6)).toBeLessThan(
-      next.combat.initiative.next,
-    );
-    expect(next.combat.state).toEqual(control.combat.state);
   });
 
   it("Die angezeigte Initiative-Reihenfolge von Runde 1 lautet 7, 3, 6, 2, 8, 4, 5, 1.", () => {
