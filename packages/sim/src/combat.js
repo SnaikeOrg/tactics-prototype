@@ -3,15 +3,14 @@ import {
   approachNearestEnemy,
   attackOptions,
   beginActivation,
-  calculateDamage,
   chooseAttackOption,
   combatStatus,
   createGreyboxLevel,
-  loadUnitTemplates,
   nextActivation,
   resolveAction,
   scoreAttackOption,
   startRound,
+  totalDamage,
 } from "@tactics/core";
 
 /**
@@ -84,29 +83,6 @@ function unitIn(state, unitId) {
 }
 
 /**
- * Schaden einer Basic Attack, wie `resolveAction` ihn anwendet (§12, §13).
- *
- * @param {GameState} state
- * @param {number} attackerId
- * @param {number} targetId
- * @returns {number}
- */
-function basicAttackDamage(state, attackerId, targetId) {
-  const attacker = unitIn(state, attackerId);
-  const template = loadUnitTemplates().find(
-    ({ id }) => id === attacker.templateId,
-  );
-  if (!template) {
-    throw new Error(`runCombat: Vorlage ${attacker.templateId} fehlt`);
-  }
-  return calculateDamage(
-    attacker.stats,
-    unitIn(state, targetId).stats,
-    template.basicAttack,
-  );
-}
-
-/**
  * @param {GameState} state
  * @param {ActivationPhase} phase
  * @param {TurnInput} input
@@ -159,10 +135,7 @@ function playActivation(start, unitId, round) {
     options.map((option) => ({
       ...option,
       score: scoreAttackOption(state, unitId, option),
-      totalDamage: Math.min(
-        basicAttackDamage(state, unitId, option.targetId),
-        unitIn(state, option.targetId).hp,
-      ),
+      totalDamage: totalDamage(state, unitId, option),
     })),
   );
 
@@ -176,16 +149,20 @@ function playActivation(start, unitId, round) {
   ({ state } = applyInput(state, phase, { type: "ACTION" }));
 
   const targetId = chosen.targetId;
-  const hpBefore = unitIn(state, targetId).hp;
-  const damage = basicAttackDamage(state, unitId, targetId);
-  state = requireAccepted(
+  const context = `BASIC_ATTACK von Unit-ID ${unitId} auf Unit-ID ${targetId}`;
+  const resolved = requireAccepted(
     resolveAction(state, {
       type: "BASIC_ATTACK",
       attackerId: unitId,
       targetId,
     }),
-    `BASIC_ATTACK von Unit-ID ${unitId} auf Unit-ID ${targetId}`,
-  ).state;
+    context,
+  );
+  const { damage, targetHp } = resolved;
+  if (damage === undefined || targetHp === undefined) {
+    throw new Error(`runCombat: ${context} liefert keinen Schaden`);
+  }
+  state = resolved.state;
 
   return {
     state,
@@ -195,7 +172,7 @@ function playActivation(start, unitId, round) {
       from,
       to: { ...unitIn(state, unitId).position },
       action: { type: "BASIC_ATTACK", targetId, damage },
-      targetHp: hpBefore - damage,
+      targetHp,
     },
   };
 }
