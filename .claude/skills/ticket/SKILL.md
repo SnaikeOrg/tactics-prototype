@@ -76,6 +76,9 @@ sein, und ein Pull würde `main` dort hineinmergen.
 - Neue Funktionen nur als Stub anlegen: Signatur mit JSDoc-Typen und
   `throw new Error("not implemented")`, exportiert über `index.js`. So
   schlägt jeder Test einzeln fehl und nicht die ganze Datei beim Import.
+  Ruft ein Test einen Befehl auf (etwa `pnpm sim`), gehört der Einstiegspunkt
+  (Skript plus Eintrag in `package.json`) mit in den Test-Commit. Er ruft nur
+  Stubs auf und enthält keine eigene Logik.
 - `pnpm test` ausführen. Jeder neue Test muss fehlschlagen, und zwar an einer
   Assertion oder an „not implemented“. Syntax- und Importfehler zählen nicht.
   Die Zusammenfassung des Laufs festhalten.
@@ -94,7 +97,9 @@ sein, und ein Pull würde `main` dort hineinmergen.
   usw.) kommen aus `packages/core/data`. Gibt es dort den benötigten Wert noch
   nicht und legt dieses Ticket ihn nicht selbst an: anhalten. Regelkonstanten
   aus RULES.md (etwa +100, 50 %) werden benannte Konstanten mit dem
-  §-Verweis als Kommentar.
+  §-Verweis als Kommentar. Einzige weitere Ausnahme: ein benannter
+  Simulationsparameter in einem Einstiegspunkt von `packages/sim`, der als
+  Parameter übergeben wird und als Annahme in `docs/DECISIONS.md` steht.
 - Nichts umsetzen, was unter „Nicht Teil“ steht, auch nicht „schon mal
   vorbereitet“.
 - Zufall nur über den injizierten Generator (`requireRng`), nie
