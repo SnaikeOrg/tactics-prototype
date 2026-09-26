@@ -1,3 +1,5 @@
+import { loadUnitTemplates, tileId } from "@tactics/core";
+
 /**
  * @typedef {object} UnitView
  * @property {number} id Unit-ID (§5.1).
@@ -25,12 +27,61 @@
  */
 
 /**
+ * §3: Anzeigenamen des Geländes.
+ *
+ * @type {Readonly<Record<import("../../core/src/grid.js").TerrainType, string>>}
+ */
+const TERRAIN_LABELS = Object.freeze({
+  GROUND: "Ground", // §3.1
+  FOREST: "Forest", // §3.2
+  HIGH_GROUND: "High Ground", // §3.3
+  WALL: "Wall", // §3.4
+});
+
+/**
+ * §20 Spielerfiguren, §21 Gegner: Anzeigenamen der Teams.
+ *
+ * @type {Readonly<Record<import("../../core/src/unit.js").Team, string>>}
+ */
+const TEAM_LABELS = Object.freeze({
+  player: "Spieler",
+  enemy: "Gegner",
+});
+
+/**
  * Macht aus einem Spielzustand ein Anzeigemodell für das Raster.
  *
  * @param {import("../../core/src/game-state.js").GameState} state
  * @returns {BoardView}
  */
 export function createBoardView(state) {
-  void state;
-  throw new Error("not implemented");
+  const { map, units } = state;
+  const templates = loadUnitTemplates();
+
+  /** @type {Map<number, UnitView>} */
+  const unitsByTile = new Map();
+  for (const unit of units) {
+    const template = templates.find(({ id }) => id === unit.templateId);
+    if (!template) {
+      throw new Error(`createBoardView: Vorlage ${unit.templateId} fehlt`);
+    }
+    unitsByTile.set(tileId(map, unit.position), {
+      id: unit.id,
+      className: template.name,
+      team: TEAM_LABELS[unit.team],
+      isPlayer: unit.team === "player",
+      hp: unit.hp,
+      maxHp: unit.maxHp,
+    });
+  }
+
+  const tiles = map.tiles.map((terrainType, index) => ({
+    x: index % map.width,
+    y: Math.floor(index / map.width),
+    terrainType,
+    terrain: TERRAIN_LABELS[terrainType],
+    unit: unitsByTile.get(index) ?? null,
+  }));
+
+  return { columns: map.width, rows: map.height, tiles };
 }
