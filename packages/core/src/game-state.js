@@ -52,6 +52,16 @@ export function createGameState({ map, units }) {
 const DEFEAT_HP = 0;
 
 /**
+ * §18: Eine Einheit mit diesen HP ist besiegt.
+ *
+ * @param {number} hp
+ * @returns {boolean}
+ */
+export function isDefeated(hp) {
+  return hp <= DEFEAT_HP;
+}
+
+/**
  * @typedef {object} DamageResult
  * @property {GameState} state
  * @property {boolean} defeated
@@ -79,7 +89,7 @@ export function applyDamage(state, unitId, damage) {
 
   const hp = target.hp - damage;
   // §18: besiegt bei HP ≤ 0, dann sofort aus dem Spielzustand gelöscht.
-  const defeated = hp <= DEFEAT_HP;
+  const defeated = isDefeated(hp);
   const units = defeated
     ? state.units.filter(({ id }) => id !== unitId)
     : state.units.map((unit) => (unit.id === unitId ? { ...unit, hp } : unit));
