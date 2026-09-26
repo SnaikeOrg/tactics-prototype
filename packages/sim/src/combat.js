@@ -1,16 +1,12 @@
 import {
   applyTurnInput,
-  approachNearestEnemy,
-  attackOptions,
   beginActivation,
-  chooseAttackOption,
   combatStatus,
   createGreyboxLevel,
   nextActivation,
+  planAiActivation,
   resolveAction,
-  scoreAttackOption,
   startRound,
-  totalDamage,
 } from "@tactics/core";
 
 /**
@@ -97,8 +93,8 @@ function applyInput(state, phase, input) {
 }
 
 /**
- * Eine Aktivierung nach der KI aus §23: beste Angriffsoption mit Bewegung und
- * Basic Attack, sonst Annäherung oder WAIT nach §23.2.
+ * Eine Aktivierung nach der KI aus §23: Plan aus `planAiActivation`, dann
+ * die Eingaben mit `applyTurnInput` und die Aktion mit `resolveAction`.
  *
  * @param {GameState} start
  * @param {number} unitId
@@ -107,15 +103,16 @@ function applyInput(state, phase, input) {
  */
 function playActivation(start, unitId, round) {
   const from = { ...unitIn(start, unitId).position };
+  const plan = planAiActivation(start, unitId);
   let state = start;
   let phase = beginActivation(unitId);
 
-  const options = attackOptions(state, unitId);
-  if (options.length === 0) {
+  for (const input of plan.inputs) {
+    ({ state, phase } = applyInput(state, phase, input));
+  }
+
+  if (!plan.action) {
     // §23.2: optional MOVE, danach WAIT.
-    for (const input of approachNearestEnemy(state, unitId).inputs) {
-      ({ state, phase } = applyInput(state, phase, input));
-    }
     return {
       state,
       entry: {
@@ -129,35 +126,9 @@ function playActivation(start, unitId, round) {
     };
   }
 
-  // §23, §23.1: Score und Gesamtschaden je Option, dann beste Option.
-  const chosen = chooseAttackOption(
-    state.map,
-    options.map((option) => ({
-      ...option,
-      score: scoreAttackOption(state, unitId, option),
-      totalDamage: totalDamage(state, unitId, option),
-    })),
-  );
-
-  if (chosen.position.x !== from.x || chosen.position.y !== from.y) {
-    ({ state, phase } = applyInput(state, phase, {
-      type: "MOVE",
-      to: chosen.position,
-    }));
-  }
-  // §6: ACTION beendet die Aktivierung, aufgelöst wird sie mit resolveAction.
-  ({ state } = applyInput(state, phase, { type: "ACTION" }));
-
-  const targetId = chosen.targetId;
+  const { targetId } = plan.action;
   const context = `BASIC_ATTACK von Unit-ID ${unitId} auf Unit-ID ${targetId}`;
-  const resolved = requireAccepted(
-    resolveAction(state, {
-      type: "BASIC_ATTACK",
-      attackerId: unitId,
-      targetId,
-    }),
-    context,
-  );
+  const resolved = requireAccepted(resolveAction(state, plan.action), context);
   const { damage, targetHp } = resolved;
   if (damage === undefined || targetHp === undefined) {
     throw new Error(`runCombat: ${context} liefert keinen Schaden`);
